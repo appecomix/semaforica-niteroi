@@ -76,38 +76,38 @@
         <div style="font-size: 13px; color: #555; font-weight: bold; margin-top: 5px;">Filial Niterói</div>
     </div>
     
-    <button type="button" id="menuBtnForm" class="btn-menu" style="background-color: var(--brand-green);">📝 Nova Ordem de Serviço</button>
-    <button type="button" id="menuBtnRelatorio" class="btn-menu" style="background-color: #007bff;">📊 Consultar Ordem de Serviço</button>
-    <button type="button" id="menuBtnEstoque" class="btn-menu" style="background-color: #ff9800;">📦 Controle de Estoque</button>
-    
+    <button type="button" onclick="abrirFormulario()" class="btn-menu" style="background-color: var(--brand-green);">📝 Nova Ordem de Serviço</button>
+    <button type="button" onclick="abrirRelatorio()" class="btn-menu" style="background-color: #007bff;">📊 Consultar Ordem de Serviço</button>
+    <button type="button" onclick="abrirEstoque()" class="btn-menu" style="background-color: #ff9800;">📦 Controle de Estoque</button>
     <div style="margin-top: 12px;">
         <a href="https://www.google.com/maps/d/viewer?mid=1VhFRzI_GfxmRoRvVWv7RzN6_8GbJYk0&ll=-22.91169477718409%2C-43.05790850000001&z=12" target="_blank" class="btn-menu" style="background-color: #17a2b8; text-decoration: none; display: flex; align-items: center; justify-content: center; color: white; height: 55px; border-radius: 6px; font-weight: bold; margin: 0;">🗺️ Mapa das Controladoras</a>
     </div>
+</div>
 
 <!-- TELA 2: ESCOLHA DE PERFIL -->
 <div id="telaEscolhaPerfil" class="login-box hidden">
     <h2>Tipo de Consulta</h2>
     <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Selecione o seu perfil de acesso:</p>
-    <button type="button" id="btnPerfilTecnico" class="btn-menu" style="background-color: #007bff; height: 50px; font-size: 16px;">Técnico (Consulta Limitada)</button>
-    <button type="button" id="btnPerfilSupervisor" class="btn-menu" style="background-color: #6c757d; height: 50px; font-size: 16px;">Supervisor (Consulta Completa)</button>
-    <button type="button" class="btnVoltarMenuSeguro btn-secondary" style="margin-top: 15px;">Voltar ao Menu</button>
+    <button type="button" onclick="selecionarPerfil('tecnico')" class="btn-menu" style="background-color: #007bff; height: 50px; font-size: 16px;">Técnico (Consulta Limitada)</button>
+    <button type="button" onclick="selecionarPerfil('supervisor')" class="btn-menu" style="background-color: #6c757d; height: 50px; font-size: 16px;">Supervisor (Consulta Completa)</button>
+    <button type="button" onclick="voltarMenu()" class="btn-secondary" style="margin-top: 15px;">Voltar ao Menu</button>
 </div>
 
 <!-- TELA 3: LOGIN -->
 <div id="telaLogin" class="login-box hidden">
     <h2 id="tituloLogin">Login</h2>
     <p id="subLogin" style="font-size: 13px; color: #666; margin-bottom: 20px;"></p>
-    <form id="formLogin">
+    <form id="formLogin" onsubmit="realizarLogin(event)">
         <label for="usuario">Usuário / Nome:</label>
         <input type="text" id="usuario" required>
 
         <div id="blocoSenha">
-            <label for="senha" id="labelSenha">Senha:</label>
+            <label for="senha">Senha:</label>
             <input type="password" id="senha" required>
         </div>
 
         <button type="submit" id="btnLogin">Entrar</button>
-        <button type="button" class="btnVoltarMenuSeguro btn-secondary" style="margin-top: 10px;">Voltar ao Menu</button>
+        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="margin-top: 10px;">Voltar ao Menu</button>
     </form>
     <div id="msgLogin"></div>
 </div>
@@ -119,7 +119,7 @@
             <h2>Consulta de OS</h2>
             <span id="infoSupervisor" style="font-size: 12px; color: var(--brand-green); font-weight: bold;"></span>
         </div>
-        <button type="button" class="btnVoltarMenuSeguro btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
+        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
     </div>
 
     <fieldset>
@@ -149,7 +149,7 @@
                 </select>
             </div>
         </div>
-        <button type="button" id="btnFiltrarRelatorio">Pesquisar</button>
+        <button type="button" id="btnFiltrarRelatorio" onclick="carregarRelatorio()">Pesquisar</button>
     </fieldset>
 
     <div style="overflow-x: auto;">
@@ -176,12 +176,12 @@
 <div id="telaEstoque" class="container hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h2>Controle de Estoque</h2>
-        <button type="button" class="btnVoltarMenuSeguro btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
+        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
     </div>
     
     <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
         <button type="button" id="btnPDFEstoque" class="btn-pdf" style="width: auto; padding: 10px 16px;">📄 Exportar Relatório (PDF)</button>
-        <button type="button" id="btnAbrirModalTransferencia" class="btn-trans" style="width: auto; padding: 10px 16px;">🔄 Pedido de Transferência</button>
+        <button type="button" onclick="abrirModalTransferencia()" class="btn-trans" style="width: auto; padding: 10px 16px;">🔄 Pedido de Transferência</button>
     </div>
 
     <div style="overflow-x: auto;">
@@ -207,7 +207,7 @@
 <div id="modalTransferencia" class="modal hidden">
     <div class="modal-content">
         <h2>Pedido de Transferência entre Filiais</h2>
-        <form id="formTransferencia">
+        <form id="formTransferencia" onsubmit="enviarTransferencia(event)">
             <label for="transFilial">Filial de Destino:</label>
             <select id="transFilial" required>
                 <option value="">Selecione a Filial...</option>
@@ -227,7 +227,7 @@
 
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button type="submit" id="btnSalvarTransferencia" style="background-color: var(--brand-green);">Confirmar Transferência</button>
-                <button type="button" id="btnFecharModalTransferencia" class="btn-secondary">Cancelar</button>
+                <button type="button" onclick="fecharModalTransferencia()" class="btn-secondary">Cancelar</button>
             </div>
         </form>
         <div id="msgTransferencia" style="margin-top: 10px; text-align: center; font-weight: bold;"></div>
@@ -238,10 +238,10 @@
 <div id="telaForm" class="container hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h2>Nova Ordem de Serviço</h2>
-        <button type="button" class="btnVoltarMenuSeguro btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
+        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
     </div>
 
-    <form id="formOS">
+    <form id="formOS" onsubmit="enviarFormularioOS(event)">
         <fieldset>
             <legend>Identificação do Serviço</legend>
             <div style="margin-bottom: 10px;">
@@ -285,7 +285,7 @@
         <fieldset>
             <legend>Manutenção Preventiva / Modelo de Controlador</legend>
             <label for="modelo_controlador">Modelo de Controlador:</label>
-            <select id="modelo_controlador" required>
+            <select id="modelo_controlador" required onchange="mudarModeloControlador(this.value)">
                 <option value="">Selecione o modelo...</option>
                 <option value="Contransin">Contransin</option>
                 <option value="Cross">Cross</option>
@@ -330,9 +330,9 @@
             <legend>Análise de Risco</legend>
             <label>Houve trabalho em altura acima de 2 metros?</label>
             <div class="radio-group">
-                <input type="radio" id="altura_nao" name="trabalho_altura" value="Não" checked required>
+                <input type="radio" id="altura_nao" name="trabalho_altura" value="Não" checked onchange="mudarTrabalhoAltura('Não')">
                 <label for="altura_nao">Não</label>
-                <input type="radio" id="altura_sim" name="trabalho_altura" value="Sim">
+                <input type="radio" id="altura_sim" name="trabalho_altura" value="Sim" onchange="mudarTrabalhoAltura('Sim')">
                 <label for="altura_sim">Sim</label>
             </div>
             <div id="campoTrabalhadores" class="hidden" style="margin-top: 10px;">
@@ -345,9 +345,9 @@
             <legend>Almoxarifado / Materiais Utilizados</legend>
             <label>Foi utilizado algum material?</label>
             <div class="radio-group" style="margin-bottom: 10px;">
-                <input type="radio" id="material_nao" name="usou_material" value="nao" checked required>
+                <input type="radio" id="material_nao" name="usou_material" value="nao" checked onchange="mudarUsouMaterial('nao')">
                 <label for="material_nao">Não</label>
-                <input type="radio" id="material_sim" name="usou_material" value="sim">
+                <input type="radio" id="material_sim" name="usou_material" value="sim" onchange="mudarUsouMaterial('sim')">
                 <label for="material_sim">Sim</label>
             </div>
             <div id="listaMateriaisContainer" class="hidden" style="border: 1px solid #ddd; padding: 10px; border-radius: 4px; background: #fafafa;">
@@ -402,7 +402,7 @@
         </fieldset>
 
         <button type="submit" id="btnEnviar">Registrar O.S</button>
-        <button type="button" id="btnWhatsApp" class="btn-whats hidden">Enviar Relatório via WhatsApp</button>
+        <button type="button" id="btnWhatsApp" class="btn-whats hidden" onclick="enviarWhatsAppNovaOS()">Enviar Relatório via WhatsApp</button>
     </form>
     <div id="mensagem"></div>
 </div>
@@ -437,81 +437,66 @@
         document.getElementById(idTela).classList.remove('hidden');
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll('.btnVoltarMenuSeguro').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const formVisivel = !document.getElementById('telaForm').classList.contains('hidden');
-                if (formVisivel) {
-                    if (confirm("Tem certeza que deseja voltar? Todos os dados preenchidos serão perdidos.")) {
-                        document.getElementById('formOS').reset();
-                        document.getElementById('btnWhatsApp').classList.add('hidden');
-                        document.getElementById('mensagem').innerText = "";
-                        mostrarTela('telaMenu');
-                    }
-                } else {
-                    mostrarTela('telaMenu');
-                }
-            });
-        });
+    function voltarMenu() {
+        const formVisivel = !document.getElementById('telaForm').classList.contains('hidden');
+        if (formVisivel) {
+            if (confirm("Tem certeza que deseja voltar? Todos os dados preenchidos serão perdidos.")) {
+                document.getElementById('formOS').reset();
+                document.getElementById('btnWhatsApp').classList.add('hidden');
+                document.getElementById('mensagem').innerText = "";
+                mostrarTela('telaMenu');
+            }
+        } else {
+            mostrarTela('telaMenu');
+        }
+    }
 
-        document.getElementById('menuBtnForm').addEventListener('click', () => {
-            acaoAtual = 'form';
-            tipoLoginAtual = 'tecnico';
-            document.getElementById('tituloLogin').innerText = "Login do Técnico";
-            document.getElementById('subLogin').innerText = "Informe seu usuário e senha.";
-            document.getElementById('blocoSenha').style.display = "block";
-            document.getElementById('senha').required = true;
-            document.getElementById('formLogin').reset();
-            document.getElementById('msgLogin').innerText = "";
-            mostrarTela('telaLogin');
-        });
+    function abrirFormulario() {
+        acaoAtual = 'form';
+        tipoLoginAtual = 'tecnico';
+        document.getElementById('tituloLogin').innerText = "Login do Técnico";
+        document.getElementById('subLogin').innerText = "Informe seu usuário e senha.";
+        document.getElementById('blocoSenha').style.display = "block";
+        document.getElementById('senha').required = true;
+        document.getElementById('formLogin').reset();
+        document.getElementById('msgLogin').innerText = "";
+        mostrarTela('telaLogin');
+    }
 
-        document.getElementById('menuBtnRelatorio').addEventListener('click', () => {
-            acaoAtual = 'relatorio';
-            mostrarTela('telaEscolhaPerfil');
-        });
+    function abrirRelatorio() {
+        acaoAtual = 'relatorio';
+        mostrarTela('telaEscolhaPerfil');
+    }
 
-        document.getElementById('menuBtnEstoque').addEventListener('click', () => {
-            acaoAtual = 'estoque';
-            tipoLoginAtual = 'supervisor';
-            document.getElementById('tituloLogin').innerText = "Acesso ao Estoque (Supervisor)";
-            document.getElementById('subLogin').innerText = "Informe seu nome e senha de supervisor.";
-            document.getElementById('blocoSenha').style.display = "block";
-            document.getElementById('senha').required = true;
-            document.getElementById('formLogin').reset();
-            document.getElementById('msgLogin').innerText = "";
-            mostrarTela('telaLogin');
-        });
+    function abrirEstoque() {
+        acaoAtual = 'estoque';
+        tipoLoginAtual = 'supervisor';
+        document.getElementById('tituloLogin').innerText = "Acesso ao Estoque (Supervisor)";
+        document.getElementById('subLogin').innerText = "Informe seu nome e senha de supervisor.";
+        document.getElementById('blocoSenha').style.display = "block";
+        document.getElementById('senha').required = true;
+        document.getElementById('formLogin').reset();
+        document.getElementById('msgLogin').innerText = "";
+        mostrarTela('telaLogin');
+    }
 
-        document.getElementById('btnPerfilTecnico').addEventListener('click', () => {
-            tipoLoginAtual = 'tecnico';
+    function selecionarPerfil(perfil) {
+        tipoLoginAtual = perfil;
+        if (perfil === 'tecnico') {
             document.getElementById('tituloLogin').innerText = "Login de Técnico";
             document.getElementById('subLogin').innerText = "Informe seu usuário e senha.";
-            document.getElementById('blocoSenha').style.display = "block";
-            document.getElementById('senha').required = true;
-            document.getElementById('formLogin').reset();
-            document.getElementById('msgLogin').innerText = "";
-            mostrarTela('telaLogin');
-        });
-
-        document.getElementById('btnPerfilSupervisor').addEventListener('click', () => {
-            tipoLoginAtual = 'supervisor';
+        } else {
             document.getElementById('tituloLogin').innerText = "Login de Supervisor";
             document.getElementById('subLogin').innerText = "Informe seu nome e senha de supervisor.";
-            document.getElementById('blocoSenha').style.display = "block";
-            document.getElementById('senha').required = true;
-            document.getElementById('formLogin').reset();
-            document.getElementById('msgLogin').innerText = "";
-            mostrarTela('telaLogin');
-        });
+        }
+        document.getElementById('blocoSenha').style.display = "block";
+        document.getElementById('senha').required = true;
+        document.getElementById('formLogin').reset();
+        document.getElementById('msgLogin').innerText = "";
+        mostrarTela('telaLogin');
+    }
 
-        document.getElementById('btnAbrirModalTransferencia').addEventListener('click', abrirModalTransferencia);
-        document.getElementById('btnFecharModalTransferencia').addEventListener('click', () => {
-            document.getElementById('modalTransferencia').classList.add('hidden');
-        });
-    });
-
-    document.getElementById('formLogin').addEventListener('submit', function(e) {
+    function realizarLogin(e) {
         e.preventDefault();
         const user = document.getElementById('usuario').value.trim();
         const pass = document.getElementById('senha').value.trim();
@@ -550,23 +535,7 @@
                     mostrarTela('telaForm');
                 } else {
                     if(isSupervisor) {
-                        document.getElementById('infoSupervisor').innerText = `Supervisor: ${data.user}`;
-                        document.getElementById('chkTecnico').parentElement.style.display = "block";
-                        document.getElementById('filtroTecnicoSelect').style.display = "block";
-                        document.getElementById('filtroTecnicoInput').style.display = "none";
-                        
-                        const sel = document.getElementById('filtroTecnicoSelect');
-                        sel.innerHTML = '<option value="">Todos os técnicos</option>';
-                        if(data.tecnicos) {
-                            data.tecnicos.forEach(t => {
-                                const opt = document.createElement('option');
-                                opt.value = t;
-                                opt.innerText = t;
-                                sel.appendChild(opt);
-                            });
-                        }
-                    } else {
-                        document.getElementById('infoSupervisor').innerText = `Técnico: ${data.user}`;
+                        document.getElementById('infoSupervisor').innerText = `Supervisor: ${data.user}`; document.getElementById('chkTecnico').parentElement.style.display = "block"; document.getElementById('filtroTecnicoSelect').style.display = "block"; document.getElementById('filtroTecnicoInput').style.display = "none";  const sel = document.getElementById('filtroTecnicoSelect'); sel.innerHTML = '<option value="">Todos os técnicos</option>'; if(data.tecnicos) { data.tecnicos.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.innerText = t; sel.appendChild(opt); }); } } else { document.getElementById('infoSupervisor').innerText = `Técnico: ${data.user}`;
                         document.getElementById('chkTecnico').parentElement.style.display = "block";
                         document.getElementById('filtroTecnicoSelect').style.display = "none";
                         document.getElementById('filtroTecnicoInput').style.display = "block";
@@ -588,7 +557,7 @@
             msg.style.color = "red";
             msg.innerText = err.message;
         });
-    });
+    }
 
     function carregarEstoque() {
         fetch(URL_APPS_SCRIPT_ESTOQUE, {
@@ -643,7 +612,7 @@
                 wrap.className = 'checkbox-item';
                 wrap.innerHTML = `
                     <input type="checkbox" class="chk-trans" value="${matName}" id="trans_${matName.replace(/\s+/g, '_')}">
-                    <label for="trans_${matName.replace(/\s+/g, '_')}" style="margin:0; font-size:12px; flex:1; cursor:pointer;">${matName} (Disp: ${item.estoque})</label>
+                    <label for="trans_${matName.replace(/\s+/g, '_')}" style="margin:0; font-size:12px; flex:1; cursor:pointer;">${matName} (Disp:${item.estoque})</label>
                     <input type="number" class="qtd-trans" placeholder="Qtd" min="1" value="1" style="width:65px; padding:3px; margin:0;">
                 `;
                 container.appendChild(wrap);
@@ -652,7 +621,11 @@
         document.getElementById('modalTransferencia').classList.remove('hidden');
     }
 
-    document.getElementById('formTransferencia').addEventListener('submit', function(e) {
+    function fecharModalTransferencia() {
+        document.getElementById('modalTransferencia').classList.add('hidden');
+    }
+
+    function enviarTransferencia(e) {
         e.preventDefault();
         const btn = document.getElementById('btnSalvarTransferencia');
         const msg = document.getElementById('msgTransferencia');
@@ -696,7 +669,7 @@
                 msg.style.color = "green";
                 msg.innerText = "Pedido de Transferência registrado com sucesso!";
                 setTimeout(() => {
-                    document.getElementById('modalTransferencia').classList.add('hidden');
+                    fecharModalTransferencia();
                     carregarEstoque();
                 }, 1500);
             } else {
@@ -709,7 +682,7 @@
             msg.style.color = "red";
             msg.innerText = err.message;
         });
-    });
+    }
 
     function carregarDadosFormulario() {
         Promise.all([
@@ -738,3 +711,152 @@
             }
             if(almoxData.result === "success" && almoxData.materiais) {
                 let listaMat = almoxData.materiais;
+                const contAlmox = document.getElementById('checkboxesMateriais');
+                contAlmox.innerHTML = "";
+                listaMat.forEach(mat => {
+                    let matFormatado = formatarTextoUnidades(mat);
+                    let isCabo = matFormatado.includes("CABO");
+                    let placeholderQtd = isCabo ? "Metros" : "Qtd";
+                    const wrap = document.createElement('div');
+                    wrap.className = 'checkbox-item';
+                    wrap.innerHTML = `
+                        <input type="checkbox" class="chk-material" value="${matFormatado}" id="mat_${matFormatado.replace(/\s+/g, '_')}">
+                        <label for="mat_${matFormatado.replace(/\s+/g, '_')}" style="margin:0; font-size:12px; flex:1; cursor:pointer;">${matFormatado}</label>
+                        <input type="number" class="qtd-material" placeholder="${placeholderQtd}" min="1" value="1" style="width:65px; padding:3px; margin:0;">
+                    `;
+                    contAlmox.appendChild(wrap);
+                });
+            }
+        });
+    }
+
+    function mudarModeloControlador(val) {
+        const secDC = document.getElementById('secaoDC');
+        if(val === 'Cross') {
+            secDC.classList.remove('hidden');
+            document.getElementById('tensao_75vdc').required = true;
+            document.getElementById('tensao_12vdc').required = true;
+            document.getElementById('tensao_24vdc').required = true;
+        } else {
+            secDC.classList.add('hidden');
+            document.getElementById('tensao_75vdc').required = false;
+            document.getElementById('tensao_12vdc').required = false;
+            document.getElementById('tensao_24vdc').required = false;
+        }
+    }
+
+    function mudarTrabalhoAltura(val) {
+        const campoTrab = document.getElementById('campoTrabalhadores');
+        if(val === 'Sim') {
+            campoTrab.classList.remove('hidden');
+            document.getElementById('trabalhadores_altura').required = true;
+        } else {
+            campoTrab.classList.add('hidden');
+            document.getElementById('trabalhadores_altura').required = false;
+            document.getElementById('trabalhadores_altura').value = "";
+        }
+    }
+
+    function mudarUsouMaterial(val) {
+        const containerMat = document.getElementById('listaMateriaisContainer');
+        if(val === 'sim') {
+            containerMat.classList.remove('hidden');
+        } else {
+            containerMat.classList.add('hidden');
+            document.querySelectorAll('.chk-material').forEach(c => c.checked = false);
+        }
+    }
+
+    function enviarFormularioOS(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnEnviar');
+        const msg = document.getElementById('mensagem');
+        
+        btn.disabled = true;
+        btn.innerText = "Registrando O.S...";
+        msg.innerText = "";
+
+        const codigosSel = Array.from(document.querySelectorAll('input[name="codigos_servico_chk"]:checked')).map(c => c.value).join(", ");
+        
+        const materiaisSel = [];
+        let textoMateriais = "";
+        if (document.querySelector('input[name="usou_material"]:checked').value === 'sim') {
+            document.querySelectorAll('#checkboxesMateriais .checkbox-item').forEach(item => {
+                const chk = item.querySelector('.chk-material');
+                let qtd = item.querySelector('.qtd-material').value;
+                if(chk && chk.checked) {
+                    let nomeMat = formatarTextoUnidades(chk.value);
+                    if (nomeMat.includes("CABO")) {
+                        qtd = `${qtd}m`; } materiaisSel.push({ nome: nomeMat, qtd: qtd }); textoMateriais += `${nomeMat} (${qtd}), `; } }); textoMateriais = textoMateriais.replace(/,\s*$/, ""); } else { textoMateriais = "Nenhum material utilizado"; }  const payload = { data_inicial: document.getElementById('data_inicial').value, hora_inicial: document.getElementById('hora_inicial').value, data_final: document.getElementById('data_final').value, hora_final: document.getElementById('hora_final').value, controladora: document.getElementById('controladora').value, codigos_servico: codigosSel, tipo_servico: document.querySelector('input[name="tipo_servico"]:checked')?.value \vert{}\vert{} "", descricao_servico: document.getElementById('descricao_servico').value, modelo_controlador: document.getElementById('modelo_controlador').value, tensao_alternada: document.getElementById('tensao_alternada').value, tensao_75vdc: document.getElementById('tensao_75vdc').value, tensao_12vdc: document.getElementById('tensao_12vdc').value, tensao_24vdc: document.getElementById('tensao_24vdc').value, aterramento: document.getElementById('aterramento').value, cabeamento: document.getElementById('cabeamento').value, fusivel: document.getElementById('fusivel').value, involucro: document.getElementById('involucro').value, gabinetes: document.getElementById('gabinetes').value, placas_cpu_potencia: document.getElementById('placas_cpu_potencia').value, padronizada: document.getElementById('padronizada').value, blocos_semaforicos: document.getElementById('blocos_semaforicos').value, colunas: document.getElementById('colunas').value, bracos: document.getElementById('bracos').value, nobreak: document.getElementById('nobreak').value, trabalho_altura: document.querySelector('input[name="trabalho_altura"]:checked')?.value \vert{}\vert{} "Não", trabalhadores_altura: document.getElementById('trabalhadores_altura').value, material_texto: textoMateriais, materiais_utilizados: materiaisSel, status_controlador: document.querySelector('input[name="status_controlador"]:checked')?.value \vert{}\vert{} "", status_servico: document.querySelector('input[name="status_servico"]:checked')?.value \vert{}\vert{} "", pendencia: document.getElementById('pendencia').value, observacao: document.getElementById('observacao').value, equipe: document.getElementById('equipe').value, tecnico: document.getElementById('tecnico').value, supervisor: document.getElementById('supervisor').value };  fetch(URL_APPS_SCRIPT_OS, { method: 'POST', body: JSON.stringify(payload) }) .then(r => r.json()) .then(res => { btn.disabled = false; btn.innerText = "Registrar O.S"; if(res.result === "success") { numeroOSGeradoFinal = res.numero_os; msg.style.color = "green"; msg.innerText = `O.S ${res.numero_os} registrada com sucesso!`;
+                document.getElementById('btnWhatsApp').classList.remove('hidden');
+            } else {
+                throw new Error(res.error || "Erro ao salvar O.S.");
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerText = "Registrar O.S";
+            msg.style.color = "red";
+            msg.innerText = err.message;
+        });
+    }
+
+    function enviarWhatsAppNovaOS() {
+        const ctrl = document.getElementById('controladora').value;
+        const dtIni = document.getElementById('data_inicial').value;
+        const hrIni = document.getElementById('hora_inicial').value;
+        const dtFim = document.getElementById('data_final').value;
+        const hrFim = document.getElementById('hora_final').value;
+        const tec = document.getElementById('tecnico').value;
+        const eqp = document.getElementById('equipe').value;
+        const mod = document.getElementById('modelo_controlador').value;
+        const cod = Array.from(document.querySelectorAll('input[name="codigos_servico_chk"]:checked')).map(c => c.value).join(", ");
+        const tipoServ = document.querySelector('input[name="tipo_servico"]:checked')?.value || "";
+        const tCA = document.getElementById('tensao_alternada').value;
+        const at = document.getElementById('aterramento').value;
+        const nob = document.getElementById('nobreak').value;
+        const fus = document.getElementById('fusivel').value;
+        const cab = document.getElementById('cabeamento').value;
+        const inv = document.getElementById('involucro').value;
+        const gab = document.getElementById('gabinetes').value;
+        const cpu = document.getElementById('placas_cpu_potencia').value;
+        const bloc = document.getElementById('blocos_semaforicos').value;
+        const col = document.getElementById('colunas').value;
+        const bra = document.getElementById('bracos').value;
+        const pad = document.getElementById('padronizada').value;
+        const stCtrl = document.querySelector('input[name="status_controlador"]:checked')?.value || "";
+        const obs = document.getElementById('observacao').value;
+
+        let matTxt = "Nenhum material utilizado";
+        document.querySelectorAll('#checkboxesMateriais .checkbox-item').forEach(item => {
+            const chk = item.querySelector('.chk-material');
+            let q = item.querySelector('.qtd-material').value;
+            if(chk && chk.checked) {
+                if(matTxt === "Nenhum material utilizado") matTxt = "";
+                matTxt += `${chk.value} (${q}), `;
+            }
+        });
+        matTxt = matTxt.replace(/,\s*$/, "");
+
+        let texto = `Manutenção semafórica\n\n` +
+                      `Data Inicial: ${dtIni}\n` +
+                      `Horario inicial: ${hrIni}\n` +
+                      `Data final: ${dtFim}\n` +
+                      `Horario final: ${hrFim}\n\n` + `Controladora: ${ctrl}\n\n` +
+                      `Código: ${cod}\n\n` + `${tipoServ}\n` +
+                      `Entrada de Alimentação (CA): ${tCA}\n` + `Aterramento: ${at}\n` +
+                      `Nobreak: ${nob}\n\n` + `Fusíveis: ${fus}\n\n`;
+
+        if (mod === 'Cross') {
+            let t75 = document.getElementById('tensao_75vdc').value;
+            let t12 = document.getElementById('tensao_12vdc').value;
+            let t24 = document.getElementById('tensao_24vdc').value;
+            texto += `Saída da fonte de Alimentação (CC):\n` +
+                     `7,5V: ${t75}\n` +
+                     `12V: ${t12}\n` + `24V: ${t24}\n\n`;
+        } else {
+            texto += `Saída da fonte de Alimentação (CC):\n\n`;
+        }
+
+        texto += `Cabeamento: ${cab}\n\n` +
+                 `Invóluc
