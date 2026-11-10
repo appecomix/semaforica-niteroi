@@ -426,13 +426,23 @@
     }
 
     function mostrarTela(idTela) {
-        document.getElementById('telaMenu').classList.add('hidden');
-        document.getElementById('telaEscolhaPerfil').classList.add('hidden');
-        document.getElementById('telaLogin').classList.add('hidden');
-        document.getElementById('telaRelatorio').classList.add('hidden');
-        document.getElementById('telaForm').classList.add('hidden');
-        document.getElementById('telaEstoque').classList.add('hidden');
-        document.getElementById(idTela).classList.remove('hidden');
+        try {
+            document.getElementById('telaMenu').classList.add('hidden');
+            document.getElementById('telaEscolhaPerfil').classList.add('hidden');
+            document.getElementById('telaLogin').classList.add('hidden');
+            document.getElementById('telaRelatorio').classList.add('hidden');
+            document.getElementById('telaForm').classList.add('hidden');
+            document.getElementById('telaEstoque').classList.add('hidden');
+            
+            const target = document.getElementById(idTela);
+            if(target) {
+                target.classList.remove('hidden');
+            } else {
+                console.error("Tela não encontrada: " + idTela);
+            }
+        } catch(err) {
+            console.error("Erro em mostrarTela:", err);
+        }
     }
 
     function voltarMenu() {
@@ -1183,19 +1193,10 @@
         doc.setDrawColor(200, 200, 200);
         doc.line(14, 30, 200, 30);
 
-        const dadosEstoqueTabela = cacheEstoque.map(i => [
-            formatarTextoUnidades(i.material),
-            i.data_ultima_entrada,
-            i.qtd_ultima_entrada,
-            i.qtd_anterior,
-            i.data_ultima_os,
-            i.estoque
-        ]);
-
         doc.autoTable({
             startY: 34,
             head: [["Material", "Data da última entrada", "Quantidade da última entrada", "Quantidade anterior à entrada", "Data da última vez que teve ordem de serviço", "Quantidade atual do estoque"]],
-            body: dadosEstoqueTabela,
+            body: cacheEstoque.map(i => [formatarTextoUnidades(i.material), i.data_ultima_entrada, i.qtd_ultima_entrada, i.qtd_anterior, i.data_ultima_os, i.estoque]),
             theme: 'grid',
             headStyles: { fillColor: [0, 137, 123] },
             styles: { fontSize: 8, cellPadding: 2 }
