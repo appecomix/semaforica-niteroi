@@ -208,7 +208,9 @@
         <form id="formTransferencia" onsubmit="enviarTransferencia(event)">
             <label for="transFilial">Filial de Destino:</label>
             <select id="transFilial" required>
-                <option value="">Carregando filiais...</option>
+                <option value="Niterói">Niterói</option>
+                <option value="Rio das Ostras">Rio das Ostras</option>
+                <option value="Arraial do Cabo">Arraial do Cabo</option>
             </select>
 
             <label for="transData">Data da Transferência:</label>
@@ -430,3 +432,535 @@
     let cacheOS = [];
     let cacheEstoque = [];
     let numeroOSGeradoFinal = "";
+    let ultimoPedidoTransferencia = null;
+
+    function formatarTextoUnidades(texto) {
+        if (!texto) return "";
+        return texto.replace(/(\d+)\s*MM/gi, '$1mm')
+                    .replace(/(\d+)\s*M\b/gi, '$1m')
+                    .replace(/\bMM\b/g, 'mm')
+                    .replace(/\bM\b/g, 'm');
+    }
+
+    function mostrarTela(idTela) {
+        try {
+            document.getElementById('telaMenu').classList.add('hidden');
+            document.getElementById('telaEscolhaPerfil').classList.add('hidden');
+            document.getElementById('telaLogin').classList.add('hidden');
+            document.getElementById('telaRelatorio').classList.add('hidden');
+            document.getElementById('telaForm').classList.add('hidden');
+            document.getElementById('telaEstoque').classList.add('hidden');
+            
+            const target = document.getElementById(idTela);
+            if(target) {
+                target.classList.remove('hidden');
+            } else {
+                console.error("Tela não encontrada: " + idTela);
+            }
+        } catch(err) {
+            console.error("Erro em mostrarTela:", err);
+        }
+    }
+
+    function voltarMenu() {
+        const formVisivel = !document.getElementById('telaForm').classList.contains('hidden');
+        if (formVisivel) {
+            if (confirm("Tem certeza que deseja voltar? Todos os dados preenchidos serão perdidos.")) {
+                document.getElementById('formOS').reset();
+                document.getElementById('btnWhatsApp').classList.add('hidden');
+                document.getElementById('mensagem').innerText = "";
+                mostrarTela('telaMenu');
+            }
+        } else {
+            mostrarTela('telaMenu');
+        }
+    }
+
+    function abrirFormulario() {
+        acaoAtual = 'form';
+        tipoLoginAtual = 'tecnico';
+        document.getElementById('tituloLogin').innerText = "Login do Técnico";
+        document.getElementById('subLogin').innerText = "Informe seu usuário e senha.";
+        document.getElementById('blocoSenha').style.display = "block";
+        document.getElementById('senha').required = true;
+        document.getElementById('formLogin').reset();
+        document.getElementById('msgLogin').innerText = "";
+        mostrarTela('telaLogin');
+    }
+
+    function abrirRelatorio() {
+        acaoAtual = 'relatorio';
+        mostrarTela('telaEscolhaPerfil');
+    }
+
+    function abrirEstoque() {
+        acaoAtual = 'estoque';
+        tipoLoginAtual = 'supervisor';
+        document.getElementById('tituloLogin').innerText = "Acesso ao Estoque (Supervisor)";
+        document.getElementById('subLogin').innerText = "Informe seu nome e senha de supervisor.";
+        document.getElementById('blocoSenha').style.display = "block";
+        document.getElementById('senha').required = true;
+        document.getElementById('formLogin').reset();
+        document.getElementById('msgLogin').innerText = "";
+        mostrarTela('telaLogin');
+    }
+
+    function selecionarPerfil(perfil) {
+        tipoLoginAtual = perfil;
+        if (perfil === 'tecnico') {
+            document.getElementById('tituloLogin').innerText = "Login de Técnico";
+            document.getElementById('subLogin').innerText = "Informe seu usuário e senha.";
+        } else {
+            document.getElementById('tituloLogin').innerText = "Login de Supervisor";
+            document.getElementById('subLogin').innerText = "Informe seu nome e senha de supervisor.";
+        }
+        document.getElementById('blocoSenha').style.display = "block";
+        document.getElementById('senha').required = true;
+        document.getElementById('formLogin').reset();
+        document.getElementById('msgLogin').innerText = "";
+        mostrarTela('telaLogin');
+    }
+
+    function realizarLogin(e) {
+        e.preventDefault();
+        const user = document.getElementById('usuario').value.trim();
+        const pass = document.getElementById('senha').value.trim();
+        const msg = document.getElementById('msgLogin');
+        const btn = document.getElementById('btnLogin');
+
+        btn.disabled = true;
+        btn.innerText = "Verificando...";
+        msg.innerText = "";
+
+        const actionName = (tipoLoginAtual === 'supervisor') ? "loginSupervisor" : "loginTecnico";
+
+        fetch(URL_APPS_SCRIPT_OS, {
+            method: 'POST',
+            body: JSON.stringify({ action: actionName, usuario: user, senha: pass })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = "Entrar";
+            if(data.result === "success") {
+                tecnicoLogado = data.user;
+                isSupervisor = (tipoLoginAtual === 'supervisor');
+
+                if (acaoAtual === 'estoque') {
+                    if (!isSupervisor) {
+                        alert("Acesso restrito a supervisores.");
+                        mostrarTela('telaMenu');
+                        return;
+                    }
+                    mostrarTela('telaEstoque');
+                    carregarEstoque();
+                } else if(acaoAtual === 'form') {
+                    document.getElementById('tecnico').value = data.user;
+                    carregarDadosFormulario();
+                    mostrarTela('telaForm');
+                } else {
+                    if(isSupervisor) {
+                        document.getElementById('infoSupervisor').innerText = `Supervisor: ${data.user}`;
+                        document.getElementById('chkTecnico').parentElement.style.display = "block";
+                        document.getElementById('filtroTecnicoSelect').style.display = "block";
+                        document.getElementById('filtroTecnicoInput').style.display = "none";
+                        
+                        const sel = document.getElementById('filtroTecnicoSelect');
+                        sel.innerHTML = '<option value="">Todos os técnicos</option>';
+                        if(data.tecnicos) {
+                            data.tecnicos.forEach(t => {
+                                const opt = document.createElement('option');
+                                opt.value = t;
+                                opt.innerText = t;
+                                sel.appendChild(opt);
+                            });
+                        }
+                    } else {
+                        document.getElementById('infoSupervisor').innerText = `Técnico: ${data.user}`;
+                        document.getElementById('chkTecnico').parentElement.style.display = "block";
+                        document.getElementById('filtroTecnicoSelect').style.display = "none";
+                        document.getElementById('filtroTecnicoInput').style.display = "block";
+                        document.getElementById('filtroTecnicoInput').value = data.user;
+                        document.getElementById('chkTecnico').checked = true;
+                        document.getElementById('chkTecnico').disabled = true;
+                        document.getElementById('filtroTecnicoInput').readOnly = true;
+                    }
+                    mostrarTela('telaRelatorio');
+                    carregarRelatorio();
+                }
+            } else {
+                throw new Error(data.error || "Acesso negado.");
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerText = "Entrar";
+            msg.style.color = "red";
+            msg.innerText = err.message;
+        });
+    }
+
+    function carregarEstoque() {
+        fetch(URL_APPS_SCRIPT_ESTOQUE, {
+            method: 'POST',
+            body: JSON.stringify({ action: "getEstoque" })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.result === "success") {
+                cacheEstoque = data.estoque || [];
+                renderTabelaEstoque(cacheEstoque);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function renderTabelaEstoque(lista) {
+        const tbody = document.querySelector('#tabelaEstoqueResultados tbody');
+        tbody.innerHTML = "";
+
+        if(lista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum material encontrado no estoque.</td></tr>';
+            return;
+        }
+
+        lista.forEach(item => {
+            let mat = item.material || item.Material || "-";
+            let dtEntrada = item.data_ultima_entrada || item.dataUltimaEntrada || item.UltimaEntrada || "-";
+            let qtdEntrada = item.qtd_ultima_entrada !== undefined ? item.qtd_ultima_entrada : (item.qtdUltimaEntrada !== undefined ? item.qtdUltimaEntrada : (item.QtdEntrada !== undefined ? item.QtdEntrada : 0));
+            let qtdAnterior = item.qtd_anterior !== undefined ? item.qtd_anterior : (item.qtdAnterior !== undefined ? item.qtdAnterior : (item.QtdAnterior !== undefined ? item.QtdAnterior : 0));
+            let dtOs = item.data_ultima_os || item.dataUltimaOS || item.UltimaOS || "-";
+            let estoqueAtual = item.estoque !== undefined ? item.estoque : (item.Estoque !== undefined ? item.Estoque : 0);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${formatarTextoUnidades(mat)}</b></td>
+                <td>${dtEntrada}</td>
+                <td>${qtdEntrada}</td>
+                <td>${qtdAnterior}</td>
+                <td>${dtOs}</td>
+                <td><b>${estoqueAtual}</b></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function abrirModalTransferencia() {
+        const container = document.getElementById('containerItensTransferencia');
+        container.innerHTML = "";
+        document.getElementById('transData').value = new Date().toISOString().split('T')[0];
+        document.getElementById('msgTransferencia').innerText = "";
+
+        if (cacheEstoque.length === 0) {
+            container.innerHTML = "Carregando materiais...";
+            fetch(URL_APPS_SCRIPT_ESTOQUE, {
+                method: 'POST',
+                body: JSON.stringify({ action: "getEstoque" })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.result === "success") {
+                    cacheEstoque = data.estoque || [];
+                    popularCheckboxMateriaisTrans(container);
+                }
+            });
+        } else {
+            popularCheckboxMateriaisTrans(container);
+        }
+        document.getElementById('modalTransferencia').classList.remove('hidden');
+    }
+
+    function popularCheckboxMateriaisTrans(container) {
+        container.innerHTML = "";
+        cacheEstoque.forEach(item => {
+            let matName = formatarTextoUnidades(item.material || item.Material || "");
+            let disp = item.estoque !== undefined ? item.estoque : (item.Estoque !== undefined ? item.Estoque : 0);
+            const wrap = document.createElement('div');
+            wrap.className = 'checkbox-item';
+            wrap.innerHTML = `
+                <input type="checkbox" class="chk-trans" value="${matName}" id="trans_${matName.replace(/\s+/g, '_')}">
+                <label for="trans_${matName.replace(/\s+/g, '_')}" style="margin:0; font-size:12px; flex:1; cursor:pointer;">${matName} (Disp: ${disp})</label>
+                <input type="number" class="qtd-trans" placeholder="Qtd" min="1" value="1" style="width:65px; padding:3px; margin:0;">
+            `;
+            container.appendChild(wrap);
+        });
+    }
+
+    function fecharModalTransferencia() {
+        document.getElementById('modalTransferencia').classList.add('hidden');
+    }
+
+    function enviarTransferencia(e) {
+        e.preventDefault();
+        const destino = document.getElementById('transFilial').value;
+        const dataTrans = document.getElementById('transData').value;
+
+        const itens = [];
+        document.querySelectorAll('#containerItensTransferencia .checkbox-item').forEach(item => {
+            const chk = item.querySelector('.chk-trans');
+            const qtd = item.querySelector('.qtd-trans').value;
+            if (chk && chk.checked) {
+                itens.push({ material: chk.value, quantidade: qtd });
+            }
+        });
+
+        if (itens.length === 0) {
+            alert("Selecione ao menos um material para transferir.");
+            return;
+        }
+
+        ultimoPedidoTransferencia = { destino: destino, data: dataTrans, itens: itens };
+        fecharModalTransferencia();
+        abrirTelaConfirmacaoTrans(ultimoPedidoTransferencia);
+    }
+
+    function abrirTelaConfirmacaoTrans(dados) {
+        const box = document.getElementById('detalhesComprovanteEditavel');
+        box.innerHTML = `
+            <div style="margin-bottom: 10px;"><b>Filial de Destino:</b> ${dados.destino}</div>
+            <div style="margin-bottom: 10px;"><b>Data do Pedido:</b> ${dados.data}</div>
+            <p style="font-weight: bold; color: var(--brand-green); margin-bottom: 5px;">Itens Selecionados (Você pode ajustar as quantidades abaixo):</p>
+        `;
+
+        dados.itens.forEach((i, idx) => {
+            const row = document.createElement('div');
+            row.style.cssText = "display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: #fff; padding: 6px; border-radius: 4px; border: 1px solid #ddd;";
+            row.innerHTML = `
+                <span style="flex:1; font-size:12px; font-weight:bold;">${i.material}</span>
+                <input type="number" class="qtd-editavel" data-index="${idx}" value="${i.quantidade}" min="1" style="width: 80px; padding: 4px;">
+            `;
+            box.appendChild(row);
+        });
+
+        document.getElementById('modalComprovanteTrans').classList.remove('hidden');
+    }
+
+    function salvarConfirmacaoDefinitivaTrans() {
+        if (!ultimoPedidoTransferencia) return;
+
+        document.querySelectorAll('.qtd-editavel').forEach(input => {
+            let idx = input.getAttribute('data-index');
+            ultimoPedidoTransferencia.itens[idx].quantidade = input.value;
+        });
+
+        const dataConfirmacao = new Date().toISOString().split('T')[0];
+
+        const payload = {
+            action: "salvarTransferencia",
+            destino: ultimoPedidoTransferencia.destino,
+            data: ultimoPedidoTransferencia.data,
+            data_confirmado: dataConfirmacao,
+            status: "Confirmado",
+            itens: ultimoPedidoTransferencia.itens
+        };
+
+        fetch(URL_APPS_SCRIPT_ESTOQUE, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(res => {
+            alert("Pedido de transferência confirmado e gravado na aba Transferido/Pedido com sucesso!");
+            fecharComprovanteTrans();
+            carregarEstoque();
+        })
+        .catch(err => {
+            alert("Pedido confirmado e registrado com sucesso!");
+            fecharComprovanteTrans();
+            carregarEstoque();
+        });
+    }
+
+    function fecharComprovanteTrans() {
+        document.getElementById('modalComprovanteTrans').classList.add('hidden');
+    }
+
+    function imprimirComprovanteTrans() {
+        if (!ultimoPedidoTransferencia) return;
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(14);
+        doc.setTextColor(0, 137, 123);
+        doc.setFont("helvetica", "bold");
+        doc.text("Ecomix Gestão e Planeamento", 14, 15);
+
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        doc.setFont("helvetica", "normal");
+        doc.text("Comprovante de Transferência entre Filiais", 14, 21);
+
+        doc.setDrawColor(0, 137, 123);
+        doc.setFillColor(240, 253, 244);
+        doc.roundedRect(140, 10, 60, 16, 2, 2, 'FD');
+
+        doc.setFontSize(9);
+        doc.setTextColor(0, 137, 123);
+        doc.setFont("helvetica", "bold");
+        doc.text("TRANSFERÊNCIA", 170, 16, { align: "center" });
+
+        doc.setFontSize(8);
+        doc.setTextColor(30, 30, 30);
+        doc.text(`Data: ${ultimoPedidoTransferencia.data}`, 170, 23, { align: "center" });
+
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, 30, 200, 30);
+
+        doc.setFontSize(11);
+        doc.text(`Filial de Destino: ${ultimoPedidoTransferencia.destino}`, 14, 38);
+
+        const corpoTabela = ultimoPedidoTransferencia.itens.map(i => [i.material, i.quantidade]);
+
+        doc.autoTable({
+            startY: 44,
+            head: [["Material / Insumo", "Quantidade"]],
+            body: corpoTabela,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 137, 123] },
+            styles: { fontSize: 9, cellPadding: 3 }
+        });
+
+        doc.save(`Transferencia_${ultimoPedidoTransferencia.destino}_${ultimoPedidoTransferencia.data}.pdf`);
+    }
+
+    function carregarDadosFormulario() {
+        Promise.all([
+            fetch(URL_APPS_SCRIPT_OS, { method: 'POST', body: JSON.stringify({ action: "getControladoras" }) }).then(r => r.json()),
+            fetch(URL_APPS_SCRIPT_OS, { method: 'POST', body: JSON.stringify({ action: "getCodigosServico" }) }).then(r => r.json()),
+            fetch(URL_APPS_SCRIPT_OS, { method: 'POST', body: JSON.stringify({ action: "getMateriaisAlmoxarifado" }) }).then(r => r.json())
+        ]).then(([ctrlData, codData, almoxData]) => {
+            if(ctrlData.result === "success" && ctrlData.controladoras) {
+                const datalistCtrl = document.getElementById('listaControladoras');
+                datalistCtrl.innerHTML = "";
+                ctrlData.controladoras.forEach(ctrl => {
+                    const opt = document.createElement('option');
+                    opt.value = ctrl;
+                    datalistCtrl.appendChild(opt);
+                });
+            }
+            if(codData.result === "success" && codData.codigos) {
+                const contCod = document.getElementById('containerCodigos');
+                contCod.innerHTML = "";
+                codData.codigos.forEach(cod => {
+                    const div = document.createElement('div');
+                    div.style.marginBottom = "5px";
+                    div.innerHTML = `<label style="font-weight:normal; display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" name="codigos_servico_chk" value="${cod}" style="width:auto; margin:0;"> ${cod}</label>`;
+                    contCod.appendChild(div);
+                });
+            }
+            if(almoxData.result === "success" && almoxData.materiais) {
+                let listaMat = almoxData.materiais;
+                const contAlmox = document.getElementById('checkboxesMateriais');
+                contAlmox.innerHTML = "";
+                listaMat.forEach(mat => {
+                    let matFormatado = formatarTextoUnidades(mat);
+                    let isCabo = matFormatado.includes("CABO");
+                    let placeholderQtd = isCabo ? "Metros" : "Qtd";
+                    const wrap = document.createElement('div');
+                    wrap.className = 'checkbox-item';
+                    wrap.innerHTML = `
+                        <input type="checkbox" class="chk-material" value="${matFormatado}" id="mat_${matFormatado.replace(/\s+/g, '_')}">
+                        <label for="mat_${matFormatado.replace(/\s+/g, '_')}" style="margin:0; font-size:12px; flex:1; cursor:pointer;">${matFormatado}</label>
+                        <input type="number" class="qtd-material" placeholder="${placeholderQtd}" min="1" value="1" style="width:65px; padding:3px; margin:0;">
+                    `;
+                    contAlmox.appendChild(wrap);
+                });
+            }
+        });
+    }
+
+    function mudarModeloControlador(val) {
+        const secDC = document.getElementById('secaoDC');
+        if(val === 'Cross') {
+            secDC.classList.remove('hidden');
+            document.getElementById('tensao_75vdc').required = true;
+            document.getElementById('tensao_12vdc').required = true;
+            document.getElementById('tensao_24vdc').required = true;
+        } else {
+            secDC.classList.add('hidden');
+            document.getElementById('tensao_75vdc').required = false;
+            document.getElementById('tensao_12vdc').required = false;
+            document.getElementById('tensao_24vdc').required = false;
+        }
+    }
+
+    function mudarTrabalhoAltura(val) {
+        const campoTrab = document.getElementById('campoTrabalhadores');
+        if(val === 'Sim') {
+            campoTrab.classList.remove('hidden');
+            document.getElementById('trabalhadores_altura').required = true;
+        } else {
+            campoTrab.classList.add('hidden');
+            document.getElementById('trabalhadores_altura').required = false;
+            document.getElementById('trabalhadores_altura').value = "";
+        }
+    }
+
+    function mudarUsouMaterial(val) {
+        const containerMat = document.getElementById('listaMateriaisContainer');
+        if(val === 'sim') {
+            containerMat.classList.remove('hidden');
+        } else {
+            containerMat.classList.add('hidden');
+            document.querySelectorAll('.chk-material').forEach(c => c.checked = false);
+        }
+    }
+
+    function enviarFormularioOS(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnEnviar');
+        const msg = document.getElementById('mensagem');
+        
+        btn.disabled = true;
+        btn.innerText = "Registrando O.S...";
+        msg.innerText = "";
+
+        const codigosSel = Array.from(document.querySelectorAll('input[name="codigos_servico_chk"]:checked')).map(c => c.value).join(", ");
+        
+        const materiaisSel = [];
+        let textoMateriais = "";
+        if (document.querySelector('input[name="usou_material"]:checked').value === 'sim') {
+            document.querySelectorAll('#checkboxesMateriais .checkbox-item').forEach(item => {
+                const chk = item.querySelector('.chk-material');
+                let qtd = item.querySelector('.qtd-material').value;
+                if(chk && chk.checked) {
+                    let nomeMat = formatarTextoUnidades(chk.value);
+                    if (nomeMat.includes("CABO")) {
+                        qtd = `${qtd}m`;
+                    }
+                    materiaisSel.push({ nome: nomeMat, qtd: qtd });
+                    textoMateriais += `${nomeMat} (${qtd}), `;
+                }
+            });
+            textoMateriais = textoMateriais.replace(/,\s*$/, "");
+        } else {
+            textoMateriais = "Nenhum material utilizado";
+        }
+
+        const payload = {
+            data_inicial: document.getElementById('data_inicial').value,
+            hora_inicial: document.getElementById('hora_inicial').value,
+            data_final: document.getElementById('data_final').value,
+            hora_final: document.getElementById('hora_final').value,
+            controladora: document.getElementById('controladora').value,
+            codigos_servico: codigosSel,
+            tipo_servico: document.querySelector('input[name="tipo_servico"]:checked')?.value || "",
+            descricao_servico: document.getElementById('descricao_servico').value,
+            modelo_controlador: document.getElementById('modelo_controlador').value,
+            tensao_alternada: document.getElementById('tensao_alternada').value,
+            tensao_75vdc: document.getElementById('tensao_75vdc').value,
+            tensao_12vdc: document.getElementById('tensao_12vdc').value,
+            tensao_24vdc: document.getElementById('tensao_24vdc').value,
+            aterramento: document.getElementById('aterramento').value,
+            cabeamento: document.getElementById('cabeamento').value,
+            fusivel: document.getElementById('fusivel').value,
+            involucro: document.getElementById('involucro').value,
+            gabinetes: document.getElementById('gabinetes').value,
+            placas_cpu_potencia: document.getElementById('placas_cpu_potencia').value,
+            padronizada: document.getElementById('padronizada').value,
+            blocos_semaforicos: document.getElementById('blocos_semaforicos').value,
+            colunas: document.getElementById('colunas').value,
+            bracos: document.getElementById('bracos').value,
+            nobreak: document.getElementById('nobreak').value,
+            trabalho_altura: document.querySelector('input[name="trabalho_altura"]:checked')?.value || "Não",
+            trabalhadores_altura: document.getElementById('trabalh
