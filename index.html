@@ -88,7 +88,7 @@
     <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Selecione o seu perfil de acesso:</p>
     <button type="button" id="btnPerfilTec" class="btn-menu" style="background-color: #007bff; height: 50px; font-size: 16px;">Técnico (Consulta Limitada)</button>
     <button type="button" id="btnPerfilSup" class="btn-menu" style="background-color: #6c757d; height: 50px; font-size: 16px;">Supervisor (Consulta Completa)</button>
-    <button type="button" onclick="voltarMenu()" class="btn-secondary" style="margin-top: 15px;">Voltar ao Menu</button>
+    <button type="button" id="btnVoltarPerfil" class="btn-secondary" style="margin-top: 15px; width: 100%;">Voltar ao Menu</button>
 </div>
 
 <!-- TELA 3: LOGIN -->
@@ -105,7 +105,7 @@
         </div>
 
         <button type="submit" id="btnLogin">Entrar</button>
-        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="margin-top: 10px;">Voltar ao Menu</button>
+        <button type="button" id="btnVoltarLogin" class="btn-secondary" style="margin-top: 10px; width: 100%;">Voltar ao Menu</button>
     </form>
     <div id="msgLogin"></div>
 </div>
@@ -117,7 +117,7 @@
             <h2>Consulta de OS</h2>
             <span id="infoSupervisor" style="font-size: 12px; color: var(--brand-green); font-weight: bold;"></span>
         </div>
-        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
+        <button type="button" id="btnVoltarRel" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
     </div>
 
     <fieldset>
@@ -174,7 +174,7 @@
 <div id="telaEstoque" class="container hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h2>Controle de Estoque</h2>
-        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
+        <button type="button" id="btnVoltarEst" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
     </div>
     
     <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
@@ -252,7 +252,7 @@
 <div id="telaForm" class="container hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h2>Nova Ordem de Serviço</h2>
-        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
+        <button type="button" id="btnVoltarForm" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
     </div>
 
     <form id="formOS" onsubmit="enviarFormularioOS(event)">
@@ -440,6 +440,11 @@
         document.getElementById('btnMenuEst').addEventListener('click', abrirEstoque);
         document.getElementById('btnPerfilTec').addEventListener('click', () => selecionarPerfil('tecnico'));
         document.getElementById('btnPerfilSup').addEventListener('click', () => selecionarPerfil('supervisor'));
+        document.getElementById('btnVoltarPerfil').addEventListener('click', voltarMenu);
+        document.getElementById('btnVoltarLogin').addEventListener('click', voltarMenu);
+        document.getElementById('btnVoltarRel').addEventListener('click', voltarMenu);
+        document.getElementById('btnVoltarEst').addEventListener('click', voltarMenu);
+        document.getElementById('btnVoltarForm').addEventListener('click', voltarMenu);
         document.getElementById('btnAbrirTrans').addEventListener('click', abrirModalTransferencia);
         document.getElementById('btnFecharTrans').addEventListener('click', fecharModalTransferencia);
         document.getElementById('btnSalvarDefinitivo').addEventListener('click', salvarConfirmacaoDefinitivaTrans);
