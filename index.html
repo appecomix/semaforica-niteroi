@@ -43,6 +43,8 @@
         .btn-whats:hover { background-color: #1ebd59; }
         .btn-pdf { background-color: #dc3545; }
         .btn-pdf:hover { background-color: #c82333; }
+        .btn-trans { background-color: #ff9800; }
+        .btn-trans:hover { background-color: #e68a00; }
         .btn-menu { height: 55px; font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; border-radius: 6px; width: 100%; border: none; color: white; cursor: pointer; font-weight: bold; }
         #msgLogin, #mensagem { margin-top: 15px; text-align: center; font-weight: bold; }
         .menu-box, .login-box { width: 100%; max-width: 450px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid var(--brand-green); }
@@ -58,6 +60,10 @@
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-bottom: 10px; }
         .checkbox-item { display: flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 6px; border-radius: 4px; border: 1px solid #e9ecef; }
         .checkbox-item input[type="checkbox"] { width: auto; margin: 0; }
+
+        /* Estilo da Modal de Transferência */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -75,7 +81,7 @@
     <a href="https://www.google.com/maps/d/viewer?mid=1VhFRzI_GfxmRoRvVWv7RzN6_8GbJYk0&ll=-22.91169477718409%2C-43.05790850000001&z=12" target="_blank" id="menuBtnMapa" class="btn-menu" style="background-color: #17a2b8;">🗺️ Mapa das Controladoras</a>
 </div>
 
-<!-- TELA 2: ESCOLHA DE PERFIL PARA CONSULTA -->
+<!-- TELA 2: ESCOLHA DE PERFIL -->
 <div id="telaEscolhaPerfil" class="login-box hidden">
     <h2>Tipo de Consulta</h2>
     <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Selecione o seu perfil de acesso:</p>
@@ -84,7 +90,7 @@
     <button type="button" class="btnVoltarMenuSeguro btn-secondary" style="margin-top: 15px;">Voltar ao Menu</button>
 </div>
 
-<!-- TELA 3: LOGIN / AUTENTICAÇÃO -->
+<!-- TELA 3: LOGIN -->
 <div id="telaLogin" class="login-box hidden">
     <h2 id="tituloLogin">Login</h2>
     <p id="subLogin" style="font-size: 13px; color: #666; margin-bottom: 20px;"></p>
@@ -103,7 +109,7 @@
     <div id="msgLogin"></div>
 </div>
 
-<!-- TELA 4: CONSULTA / RELATÓRIO DE OS -->
+<!-- TELA 4: CONSULTA OS -->
 <div id="telaRelatorio" class="container hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <div>
@@ -163,15 +169,16 @@
     </div>
 </div>
 
-<!-- TELA 6: TELA DE ESTOQUE INTERNA -->
+<!-- TELA 5: CONTROLE DE ESTOQUE E OPÇÃO DE TRANSFERÊNCIA -->
 <div id="telaEstoque" class="container hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h2>Controle de Estoque</h2>
         <button type="button" class="btnVoltarMenuSeguro btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
     </div>
     
-    <div style="margin-bottom: 15px;">
-        <button type="button" id="btnPDFEstoque" class="btn-pdf" style="width: auto; padding: 10px 20px;">📄 Exportar Relatório de Estoque (PDF)</button>
+    <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" id="btnPDFEstoque" class="btn-pdf" style="width: auto; padding: 10px 16px;">📄 Exportar Relatório (PDF)</button>
+        <button type="button" id="btnAbrirModalTransferencia" class="btn-trans" style="width: auto; padding: 10px 16px;">🔄 Pedido de Transferência</button>
     </div>
 
     <div style="overflow-x: auto;">
@@ -179,20 +186,52 @@
             <thead>
                 <tr>
                     <th>Descrição</th>
-                    <th>Data de compra</th>
-                    <th>Quantidade comprada</th>
-                    <th>Data de movimentação ou uso</th>
-                    <th>Quantidade em estoque</th>
+                    <th>Data da última entrada</th>
+                    <th>Qtd última entrada</th>
+                    <th>Qtd anterior à entrada</th>
+                    <th>Data última OS</th>
+                    <th>Quantidade atual em estoque</th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td colspan="5" style="text-align:center;">A carregar estoque...</td></tr>
+                <tr><td colspan="6" style="text-align:center;">Carregando estoque...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- TELA 5: FORMULÁRIO DE LANÇAMENTO DE OS -->
+<!-- MODAL DE PEDIDO DE TRANSFERÊNCIA -->
+<div id="modalTransferencia" class="modal hidden">
+    <div class="modal-content">
+        <h2>Pedido de Transferência entre Filiais</h2>
+        <form id="formTransferencia">
+            <label for="transFilial">Filial de Destino:</label>
+            <select id="transFilial" required>
+                <option value="">Selecione a Filial...</option>
+                <option value="Rio das Ostras">Rio das Ostras</option>
+                <option value="Itaboraí">Itaboraí</option>
+                <option value="Maricá">Maricá</option>
+                <option value="Outra">Outra</option>
+            </select>
+
+            <label for="transData">Data da Transferência:</label>
+            <input type="date" id="transData" required>
+
+            <label style="color: var(--brand-green); margin-top: 10px;">Selecione os Materiais e Quantidades:</label>
+            <div id="containerItensTransferencia" class="checkbox-grid" style="max-height: 250px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                Carregando materiais...
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" id="btnSalvarTransferencia" style="background-color: var(--brand-green);">Confirmar Transferência</button>
+                <button type="button" id="btnFecharModalTransferencia" class="btn-secondary">Cancelar</button>
+            </div>
+        </form>
+        <div id="msgTransferencia" style="margin-top: 10px; text-align: center; font-weight: bold;"></div>
+    </div>
+</div>
+
+<!-- TELA 6: FORMULÁRIO OS -->
 <div id="telaForm" class="container hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h2>Nova Ordem de Serviço</h2>
@@ -237,7 +276,7 @@
         <!-- Detalhamento -->
         <fieldset>
             <legend>Detalhamento Técnico</legend>
-            <label>Código(s) do Serviço (Selecione um ou mais):</label>
+            <label>Código(s) do Serviço:</label>
             <div id="containerCodigos" style="max-height: 160px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa;">
                 Carregando códigos...
             </div>
@@ -268,7 +307,6 @@
                 </div>
             </div>
 
-            <!-- Medições Padrão -->
             <div style="margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 10px;">
                 <div class="grid-2">
                     <div><label>Tensão CA:</label><input type="text" id="tensao_alternada" required></div>
@@ -276,7 +314,6 @@
                 </div>
             </div>
 
-            <!-- Infraestrutura -->
             <div style="margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 10px;">
                 <div class="grid-3">
                     <div><label>Cabeamento:</label><input type="text" id="cabeamento" required></div>
@@ -384,8 +421,9 @@
 </div>
 
 <script>
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxejf3AQvcDiOC2ShcRziOFuIHzkgYmwNn01PoF_vWwtRiaPdI5QmYU1NYIammMmH-J/exec";
-    
+    const URL_APPS_SCRIPT_OS = "https://script.google.com/macros/s/AKfycbxejf3AQvcDiOC2ShcRziOFuIHzkgYmwNn01PoF_vWwtRiaPdI5QmYU1NYIammMmH-J/exec";
+    const URL_APPS_SCRIPT_ESTOQUE = "https://script.google.com/macros/s/AKfycbx_NOVO_SCRIPT_ESTOQUE/exec"; // Substitua pela URL da planilha de Estoque se tiver deploy próprio
+
     let tecnicoLogado = "";
     let isSupervisor = false;
     let acaoAtual = ""; 
@@ -479,6 +517,12 @@
             document.getElementById('msgLogin').innerText = "";
             mostrarTela('telaLogin');
         });
+
+        // Controles da Modal de Transferência
+        document.getElementById('btnAbrirModalTransferencia').addEventListener('click', abrirModalTransferencia);
+        document.getElementById('btnFecharModalTransferencia').addEventListener('click', () => {
+            document.getElementById('modalTransferencia').classList.add('hidden');
+        });
     });
 
     document.getElementById('formLogin').addEventListener('submit', function(e) {
@@ -494,7 +538,7 @@
 
         const actionName = (tipoLoginAtual === 'supervisor') ? "loginSupervisor" : "loginTecnico";
 
-        fetch(URL_APPS_SCRIPT, {
+        fetch(URL_APPS_SCRIPT_OS, {
             method: 'POST',
             body: JSON.stringify({ action: actionName, usuario: user, senha: pass })
         })
@@ -560,11 +604,136 @@
         });
     });
 
+    function carregarEstoque() {
+        const scriptURL = (URL_APPS_SCRIPT_ESTOQUE.includes("NOVO_SCRIPT")) ? URL_APPS_SCRIPT_OS : URL_APPS_SCRIPT_ESTOQUE;
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "getEstoque" })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.result === "success") {
+                cacheEstoque = data.estoque || [];
+                renderTabelaEstoque(cacheEstoque);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function renderTabelaEstoque(lista) {
+        const tbody = document.querySelector('#tabelaEstoqueResultados tbody');
+        tbody.innerHTML = "";
+
+        if(lista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum material encontrado no estoque.</td></tr>';
+            return;
+        }
+
+        lista.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${formatarTextoUnidades(item.material)}</b></td>
+                <td>${item.data_ultima_entrada}</td>
+                <td>${item.qtd_ultima_entrada}</td>
+                <td>${item.qtd_anterior}</td>
+                <td>${item.data_ultima_os}</td>
+                <td><b>${item.estoque}</b></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function abrirModalTransferencia() {
+        const container = document.getElementById('containerItensTransferencia');
+        container.innerHTML = "";
+        document.getElementById('transData').value = new Date().toISOString().split('T')[0];
+        document.getElementById('msgTransferencia').innerText = "";
+
+        if (cacheEstoque.length === 0) {
+            container.innerHTML = "A carregar materiais...";
+        } else {
+            cacheEstoque.forEach(item => {
+                let matName = formatarTextoUnidades(item.material);
+                const wrap = document.createElement('div');
+                wrap.className = 'checkbox-item';
+                wrap.innerHTML = `
+                    <input type="checkbox" class="chk-trans" value="${matName}" id="trans_${matName.replace(/\s+/g, '_')}">
+                    <label for="trans_${matName.replace(/\s+/g, '_')}" style="margin:0; font-size:12px; flex:1; cursor:pointer;">${matName} (Disp: ${item.estoque})</label>
+                    <input type="number" class="qtd-trans" placeholder="Qtd" min="1" value="1" style="width:65px; padding:3px; margin:0;">
+                `;
+                container.appendChild(wrap);
+            });
+        }
+        document.getElementById('modalTransferencia').classList.remove('hidden');
+    }
+
+    document.getElementById('formTransferencia').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSalvarTransferencia');
+        const msg = document.getElementById('msgTransferencia');
+        const destino = document.getElementById('transFilial').value;
+        const dataTrans = document.getElementById('transData').value;
+
+        const itens = [];
+        document.querySelectorAll('#containerItensTransferencia .checkbox-item').forEach(item => {
+            const chk = item.querySelector('.chk-trans');
+            const qtd = item.querySelector('.qtd-trans').value;
+            if (chk && chk.checked) {
+                itens.push({ material: chk.value, quantidade: qtd });
+            }
+        });
+
+        if (itens.length === 0) {
+            alert("Selecione ao menos um material para transferir.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Registrando...";
+        msg.innerText = "";
+
+        const payload = {
+            action: "salvarTransferencia",
+            destino: destino,
+            data: dataTrans,
+            itens: itens
+        };
+
+        const scriptURL = (URL_APPS_SCRIPT_ESTOQUE.includes("NOVO_SCRIPT")) ? URL_APPS_SCRIPT_OS : URL_APPS_SCRIPT_ESTOQUE;
+
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(res => {
+            btn.disabled = false;
+            btn.innerText = "Confirmar Transferência";
+            if (res.result === "success") {
+                msg.style.color = "green";
+                msg.innerText = "Pedido de Transferência registrado com sucesso!";
+                setTimeout(() => {
+                    document.getElementById('modalTransferencia').classList.add('hidden');
+                    carregarEstoque();
+                }, 1500);
+            } else {
+                throw new Error(res.error || "Erro ao registrar transferência.");
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerText = "Confirmar Transferência";
+            msg.style.color = "red";
+            msg.innerText = err.message;
+        });
+    });
+
+    // Demais funções mantidas intactas
     function carregarDadosFormulario() {
         Promise.all([
-            fetch(URL_APPS_SCRIPT, { method: 'POST', body: JSON.stringify({ action: "getControladoras" }) }).then(r => r.json()),
-            fetch(URL_APPS_SCRIPT, { method: 'POST', body: JSON.stringify({ action: "getCodigosServico" }) }).then(r => r.json()),
-            fetch(URL_APPS_SCRIPT, { method: 'POST', body: JSON.stringify({ action: "getMateriaisAlmoxarifado" }) }).then(r => r.json())
+            fetch(URL_APPS_SCRIPT_OS, { method: 'POST', body: JSON.stringify({ action: "getControladoras" }) }).then(r => r.json()),
+            fetch(URL_APPS_SCRIPT_OS, { method: 'POST', body: JSON.stringify({ action: "getCodigosServico" }) }).then(r => r.json()),
+            fetch(URL_APPS_SCRIPT_OS, { method: 'POST', body: JSON.stringify({ action: "getMateriaisAlmoxarifado" }) }).then(r => r.json())
         ]).then(([ctrlData, codData, almoxData]) => {
             if(ctrlData.result === "success" && ctrlData.controladoras) {
                 const datalistCtrl = document.getElementById('listaControladoras');
@@ -661,7 +830,7 @@
         const materiaisSel = [];
         let textoMateriais = "";
         if (document.querySelector('input[name="usou_material"]:checked').value === 'sim') {
-            document.querySelectorAll('.checkbox-item').forEach(item => {
+            document.querySelectorAll('#checkboxesMateriais .checkbox-item').forEach(item => {
                 const chk = item.querySelector('.chk-material');
                 let qtd = item.querySelector('.qtd-material').value;
                 if(chk && chk.checked) {
@@ -716,7 +885,7 @@
             supervisor: document.getElementById('supervisor').value
         };
 
-        fetch(URL_APPS_SCRIPT, {
+        fetch(URL_APPS_SCRIPT_OS, {
             method: 'POST',
             body: JSON.stringify(payload)
         })
@@ -769,7 +938,7 @@
         const obs = document.getElementById('observacao').value;
 
         let matTxt = "Nenhum material utilizado";
-        document.querySelectorAll('.checkbox-item').forEach(item => {
+        document.querySelectorAll('#checkboxesMateriais .checkbox-item').forEach(item => {
             const chk = item.querySelector('.chk-material');
             let q = item.querySelector('.qtd-material').value;
             if(chk && chk.checked) {
@@ -885,7 +1054,7 @@
             filtroEquipe: document.getElementById('filtroEquipe').value
         };
 
-        fetch(URL_APPS_SCRIPT, {
+        fetch(URL_APPS_SCRIPT_OS, {
             method: 'POST',
             body: JSON.stringify(payload)
         })
@@ -1020,43 +1189,6 @@
         doc.save(`OS_${os.numero_os}.pdf`);
     }
 
-    function carregarEstoque() {
-        fetch(URL_APPS_SCRIPT, {
-            method: 'POST',
-            body: JSON.stringify({ action: "getEstoque" })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if(data.result === "success") {
-                cacheEstoque = data.estoque || [];
-                renderTabelaEstoque(cacheEstoque);
-            }
-        })
-        .catch(err => console.error(err));
-    }
-
-    function renderTabelaEstoque(lista) {
-        const tbody = document.querySelector('#tabelaEstoqueResultados tbody');
-        tbody.innerHTML = "";
-
-        if(lista.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum material encontrado no estoque.</td></tr>';
-            return;
-        }
-
-        lista.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><b>${formatarTextoUnidades(item.material)}</b></td>
-                <td>${item.data_compra}</td>
-                <td>${item.quantidade_comprada}</td>
-                <td>${item.data_movimentacao}</td>
-                <td><b>${item.estoque}</b></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
     document.getElementById('btnPDFEstoque').addEventListener('click', function() {
         if(!cacheEstoque || cacheEstoque.length === 0) return alert("Sem dados de estoque para exportar.");
 
@@ -1091,19 +1223,20 @@
 
         const dadosEstoqueTabela = cacheEstoque.map(i => [
             formatarTextoUnidades(i.material),
-            i.data_compra,
-            i.quantidade_comprada,
-            i.data_movimentacao,
+            i.data_ultima_entrada,
+            i.qtd_ultima_entrada,
+            i.qtd_anterior,
+            i.data_ultima_os,
             i.estoque
         ]);
 
         doc.autoTable({
             startY: 34,
-            head: [["Descrição", "Data de compra", "Quantidade comprada", "Data de movimentação ou uso", "Quantidade em estoque"]],
+            head: [["Descrição", "Data última entrada", "Qtd última entrada", "Qtd anterior", "Data última OS", "Estoque Atual"]],
             body: dadosEstoqueTabela,
             theme: 'grid',
             headStyles: { fillColor: [0, 137, 123] },
-            styles: { fontSize: 9, cellPadding: 3 }
+            styles: { fontSize: 8, cellPadding: 2 }
         });
 
         doc.save(`Relatorio_Estoque_Niteroi.pdf`);
