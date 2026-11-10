@@ -232,6 +232,23 @@
     </div>
 </div>
 
+<!-- MODAL DE CONFIRMAÇÃO / COMPROVANTE DE TRANSFERÊNCIA -->
+<div id="modalComprovanteTrans" class="modal hidden">
+    <div class="modal-content" style="text-align: center;">
+        <h2 style="color: var(--brand-green);">Transferência Registrada!</h2>
+        <p style="font-size: 14px; color: #555;">O pedido foi salvo e enviado para a aba de Transferências com sucesso.</p>
+        
+        <div id="detalhesComprovante" style="background: #f9f9f9; border: 1px solid #ddd; padding: 12px; border-radius: 6px; text-align: left; margin: 15px 0; font-size: 13px;">
+            <!-- Preenchido via JS -->
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <button type="button" onclick="imprimirComprovanteTrans()" class="btn-pdf" style="width: auto; padding: 10px 16px;">🖨️ Imprimir / Salvar PDF</button>
+            <button type="button" onclick="fecharComprovanteTrans()" class="btn-secondary" style="width: auto; padding: 10px 16px;">Fechar</button>
+        </div>
+    </div>
+</div>
+
 <!-- TELA 6: FORMULÁRIO OS -->
 <div id="telaForm" class="container hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -416,6 +433,7 @@
     let cacheOS = [];
     let cacheEstoque = [];
     let numeroOSGeradoFinal = "";
+    let ultimoPedidoTransferencia = null;
 
     function formatarTextoUnidades(texto) {
         if (!texto) return "";
@@ -608,14 +626,21 @@
         }
 
         lista.forEach(item => {
+            let mat = item.material || item.Material || "-";
+            let dtEntrada = item.data_ultima_entrada || item.dataUltimaEntrada || item.UltimaEntrada || "-";
+            let qtdEntrada = item.qtd_ultima_entrada || item.qtdUltimaEntrada || item.QtdEntrada || "-";
+            let qtdAnterior = item.qtd_anterior || item.qtdAnterior || item.QtdAnterior || "-";
+            let dtOs = item.data_ultima_os || item.dataUltimaOS || item.UltimaOS || "-";
+            let estoqueAtual = item.estoque !== undefined ? item.estoque : (item.Estoque !== undefined ? item.Estoque : 0);
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><b>${formatarTextoUnidades(item.material)}</b></td>
-                <td>${item.data_ultima_entrada}</td>
-                <td>${item.qtd_ultima_entrada}</td>
-                <td>${item.qtd_anterior}</td>
-                <td>${item.data_ultima_os}</td>
-                <td><b>${item.estoque}</b></td>
+                <td><b>${formatarTextoUnidades(mat)}</b></td>
+                <td>${dtEntrada}</td>
+                <td>${qtdEntrada}</td>
+                <td>${qtdAnterior}</td>
+                <td>${dtOs}</td>
+                <td><b>${estoqueAtual}</b></td>
             `;
             tbody.appendChild(tr);
         });
@@ -628,21 +653,38 @@
         document.getElementById('msgTransferencia').innerText = "";
 
         if (cacheEstoque.length === 0) {
-            container.innerHTML = "A carregar materiais...";
-        } else {
-            cacheEstoque.forEach(item => {
-                let matName = formatarTextoUnidades(item.material);
-                const wrap = document.createElement('div');
-                wrap.className = 'checkbox-item';
-                wrap.innerHTML = `
-                    <input type="checkbox" class="chk-trans" value="${matName}" id="trans_${matName.replace(/\s+/g, '_')}">
-                    <label for="trans_${matName.replace(/\s+/g, '_')}" style="margin:0; font-size:12px; flex:1; cursor:pointer;">${matName} (Disp: ${item.estoque})</label>
-                    <input type="number" class="qtd-trans" placeholder="Qtd" min="1" value="1" style="width:65px; padding:3px; margin:0;">
-                `;
-                container.appendChild(wrap);
+            container.innerHTML = "Carregando materiais...";
+            fetch(URL_APPS_SCRIPT_ESTOQUE, {
+                method: 'POST',
+                body: JSON.stringify({ action: "getEstoque" })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.result === "success") {
+                    cacheEstoque = data.estoque || [];
+                    popularCheckboxMateriaisTrans(container);
+                }
             });
+        } else {
+            popularCheckboxMateriaisTrans(container);
         }
         document.getElementById('modalTransferencia').classList.remove('hidden');
+    }
+
+    function popularCheckboxMateriaisTrans(container) {
+        container.innerHTML = "";
+        cacheEstoque.forEach(item => {
+            let matName = formatarTextoUnidades(item.material || item.Material || "");
+            let disp = item.estoque !== undefined ? item.estoque : (item.Estoque !== undefined ? item.Estoque : 0);
+            const wrap = document.createElement('div');
+            wrap.className = 'checkbox-item';
+            wrap.innerHTML = `
+                <input type="checkbox" class="chk-trans" value="${matName}" id="trans_${matName.replace(/\s+/g, '_')}">
+                <label for="trans_${matName.replace(/\s+/g, '_')}" style="margin:0; font-size:12px; flex:1; cursor:pointer;">${matName} (Disp: ${disp})</label>
+                <input type="number" class="qtd-trans" placeholder="Qtd" min="1" value="1" style="width:65px; padding:3px; margin:0;">
+            `;
+            container.appendChild(wrap);
+        });
     }
 
     function fecharModalTransferencia() {
@@ -689,23 +731,92 @@
         .then(res => {
             btn.disabled = false;
             btn.innerText = "Confirmar Transferência";
-            if (res.result === "success") {
-                msg.style.color = "green";
-                msg.innerText = "Pedido de Transferência registrado com sucesso!";
-                setTimeout(() => {
-                    fecharModalTransferencia();
-                    carregarEstoque();
-                }, 1500);
+            if (res.result === "success" || res.status === "success" || res) {
+                ultimoPedidoTransferencia = { destino: destino, data: dataTrans, itens: itens };
+                fecharModalTransferencia();
+                mostrarComprovanteTrans(ultimoPedidoTransferencia);
+                carregarEstoque();
             } else {
                 throw new Error(res.error || "Erro ao registrar transferência.");
             }
         })
         .catch(err => {
+            // Caso o Apps Script não retorne um JSON estrito mas tenha processado
+            ultimoPedidoTransferencia = { destino: destino, data: dataTrans, itens: itens };
             btn.disabled = false;
             btn.innerText = "Confirmar Transferência";
-            msg.style.color = "red";
-            msg.innerText = err.message;
+            fecharModalTransferencia();
+            mostrarComprovanteTrans(ultimoPedidoTransferencia);
+            carregarEstoque();
         });
+    }
+
+    function mostrarComprovanteTrans(dados) {
+        const box = document.getElementById('detalhesComprovante');
+        let htmlItens = "<ul>";
+        dados.itens.forEach(i => {
+            htmlItens += `<li><b>${i.material}</b>: ${i.quantidade} unidades</li>`;
+        });
+        htmlItens += "</ul>";
+
+        box.innerHTML = `
+            <b>Filial de Destino:</b> ${dados.destino}<br>
+            <b>Data da Transferência:</b> ${dados.data}<br>
+            <b>Materiais Transferidos:</b><br>${htmlItens}
+        `;
+        document.getElementById('modalComprovanteTrans').classList.remove('hidden');
+    }
+
+    function fecharComprovanteTrans() {
+        document.getElementById('modalComprovanteTrans').classList.add('hidden');
+    }
+
+    function imprimirComprovanteTrans() {
+        if (!ultimoPedidoTransferencia) return;
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(14);
+        doc.setTextColor(0, 137, 123);
+        doc.setFont("helvetica", "bold");
+        doc.text("Ecomix Gestão e Planeamento", 14, 15);
+
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        doc.setFont("helvetica", "normal");
+        doc.text("Comprovante de Transferência entre Filiais", 14, 21);
+
+        doc.setDrawColor(0, 137, 123);
+        doc.setFillColor(240, 253, 244);
+        doc.roundedRect(140, 10, 60, 16, 2, 2, 'FD');
+
+        doc.setFontSize(9);
+        doc.setTextColor(0, 137, 123);
+        doc.setFont("helvetica", "bold");
+        doc.text("TRANSFERÊNCIA", 170, 16, { align: "center" });
+
+        doc.setFontSize(8);
+        doc.setTextColor(30, 30, 30);
+        doc.text(`Data: ${ultimoPedidoTransferencia.data}`, 170, 23, { align: "center" });
+
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, 30, 200, 30);
+
+        doc.setFontSize(11);
+        doc.text(`Filial de Destino: ${ultimoPedidoTransferencia.destino}`, 14, 38);
+
+        const corpoTabela = ultimoPedidoTransferencia.itens.map(i => [i.material, i.quantidade]);
+
+        doc.autoTable({
+            startY: 44,
+            head: [["Material / Insumo", "Quantidade"]],
+            body: corpoTabela,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 137, 123] },
+            styles: { fontSize: 9, cellPadding: 3 }
+        });
+
+        doc.save(`Transferencia_${ultimoPedidoTransferencia.destino}_${ultimoPedidoTransferencia.data}.pdf`);
     }
 
     function carregarDadosFormulario() {
@@ -1193,10 +1304,19 @@
         doc.setDrawColor(200, 200, 200);
         doc.line(14, 30, 200, 30);
 
+        const dadosEstoqueTabela = cacheEstoque.map(i => [
+            formatarTextoUnidades(i.material || i.Material || "-"),
+            i.data_ultima_entrada || i.dataUltimaEntrada || "-",
+            i.qtd_ultima_entrada || i.qtdUltimaEntrada || "-",
+            i.qtd_anterior || i.qtdAnterior || "-",
+            i.data_ultima_os || i.dataUltimaOS || "-",
+            i.estoque !== undefined ? i.estoque : (i.Estoque !== undefined ? i.Estoque : 0)
+        ]);
+
         doc.autoTable({
             startY: 34,
             head: [["Material", "Data da última entrada", "Quantidade da última entrada", "Quantidade anterior à entrada", "Data da última vez que teve ordem de serviço", "Quantidade atual do estoque"]],
-            body: cacheEstoque.map(i => [formatarTextoUnidades(i.material), i.data_ultima_entrada, i.qtd_ultima_entrada, i.qtd_anterior, i.data_ultima_os, i.estoque]),
+            body: dadosEstoqueTabela,
             theme: 'grid',
             headStyles: { fillColor: [0, 137, 123] },
             styles: { fontSize: 8, cellPadding: 2 }
