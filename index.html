@@ -39,30 +39,15 @@
         button:hover { background-color: var(--brand-green-hover); }
         .btn-secondary { background-color: #6c757d; }
         .btn-secondary:hover { background-color: #5a6268; }
-        .btn-whats { background-color: var(--whatsapp); }
-        .btn-whats:hover { background-color: #1ebd59; }
-        .btn-pdf { background-color: #dc3545; }
-        .btn-pdf:hover { background-color: #c82333; }
-        .btn-trans { background-color: #ff9800; }
-        .btn-trans:hover { background-color: #e68a00; }
         
         .btn-menu { height: 55px; font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; border-radius: 6px; width: 100%; color: white; cursor: pointer; font-weight: bold; box-sizing: border-box; border: none; }
         
-        #msgLogin, #mensagem { margin-top: 15px; text-align: center; font-weight: bold; }
         .menu-box, .login-box { width: 100%; max-width: 450px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid var(--brand-green); }
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: var(--brand-green); color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
-        .actions-cell { display: flex; gap: 5px; flex-wrap: wrap; }
-        .actions-cell button { padding: 5px 8px; font-size: 11px; margin: 0; width: auto; }
-        .filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-        .filter-row input[type="checkbox"] { width: auto; margin: 0; }
-        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-bottom: 10px; }
-        .checkbox-item { display: flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 6px; border-radius: 4px; border: 1px solid #e9ecef; }
-        .checkbox-item input[type="checkbox"] { width: auto; margin: 0; }
-
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .modal-content { background: white; padding: 20px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
     </style>
@@ -82,248 +67,52 @@
     <a href="https://www.google.com/maps/d/viewer?mid=1VhFRzI_GfxmRoRvVWv7RzN6_8GbJYk0&ll=-22.91169477718409%2C-43.05790850000001&z=12" target="_blank" class="btn-menu" style="background-color: #17a2b8;">🗺️ Mapa das Controladoras</a>
 </div>
 
-<!-- TELA 2: ESCOLHA DE PERFIL -->
-<div id="telaEscolhaPerfil" class="login-box hidden">
-    <h2>Tipo de Consulta</h2>
-    <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Selecione o seu perfil de acesso:</p>
-    <button type="button" onclick="selecionarPerfil('tecnico')" class="btn-menu" style="background-color: #007bff; height: 50px; font-size: 16px;">Técnico (Consulta Limitada)</button>
-    <button type="button" onclick="selecionarPerfil('supervisor')" class="btn-menu" style="background-color: #6c757d; height: 50px; font-size: 16px;">Supervisor (Consulta Completa)</button>
-    <button type="button" onclick="voltarMenu()" class="btn-secondary" style="margin-top: 15px;">Voltar ao Menu</button>
-</div>
-
-<!-- TELA 3: LOGIN -->
-<div id="telaLogin" class="login-box hidden">
-    <h2 id="tituloLogin">Login</h2>
-    <p id="subLogin" style="font-size: 13px; color: #666; margin-bottom: 20px;"></p>
-    <form id="formLogin" onsubmit="realizarLogin(event)">
-        <label for="usuario">Usuário / Nome:</label>
-        <input type="text" id="usuario" required>
-
-        <div id="blocoSenha">
-            <label for="senha">Senha:</label>
-            <input type="password" id="senha" required>
-        </div>
-
-        <button type="submit" id="btnLogin">Entrar</button>
-        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="margin-top: 10px;">Voltar ao Menu</button>
-    </form>
-    <div id="msgLogin"></div>
-</div>
-
-<!-- TELA 4: CONSULTA OS -->
+<!-- TELA 2: CONSULTA OS -->
 <div id="telaRelatorio" class="container hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <div>
-            <h2>Consulta de OS</h2>
-            <span id="infoSupervisor" style="font-size: 12px; color: var(--brand-green); font-weight: bold;"></span>
-        </div>
-        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
-    </div>
-
-    <fieldset>
-        <legend>Filtros de Pesquisa</legend>
-        <div class="grid-4">
-            <div>
-                <div class="filter-row"><input type="checkbox" id="chkOS"><label for="chkOS" style="margin:0;">Nº da OS</label></div>
-                <input type="text" id="filtroOS" placeholder="Filtrar OS...">
-            </div>
-            <div>
-                <div class="filter-row"><input type="checkbox" id="chkData"><label for="chkData" style="margin:0;">Data Inicial</label></div>
-                <input type="date" id="filtroData">
-            </div>
-            <div>
-                <div class="filter-row"><input type="checkbox" id="chkTecnico"><label for="chkTecnico" style="margin:0;">Técnico</label></div>
-                <select id="filtroTecnicoSelect" style="display:none; width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;"><option value="">Todos os técnicos</option></select>
-                <input type="text" id="filtroTecnicoInput" readonly style="background:#e9ecef; width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px; display:none;">
-            </div>
-            <div>
-                <div class="filter-row"><input type="checkbox" id="chkEquipe"><label for="chkEquipe" style="margin:0;">Equipe</label></div>
-                <select id="filtroEquipe" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
-                    <option value="">Todas</option>
-                    <option value="01">01</option>
-                    <option value="02">02</option>
-                    <option value="03">03</option>
-                    <option value="04">04</option>
-                </select>
-            </div>
-        </div>
-        <button type="button" id="btnFiltrarRelatorio" onclick="carregarRelatorio()">Pesquisar</button>
-    </fieldset>
-
-    <div style="overflow-x: auto;">
-        <table id="tabelaResultados">
-            <thead>
-                <tr>
-                    <th>OS</th>
-                    <th>Data</th>
-                    <th>Controladora</th>
-                    <th>Técnico</th>
-                    <th>Equipe</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td colspan="7" style="text-align:center;">Selecione os filtros e clique em Pesquisar...</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <h2>Consulta de OS</h2>
+    <button type="button" onclick="voltarMenu()" class="btn-secondary">Voltar ao Menu</button>
 </div>
 
-<!-- TELA 5: CONTROLE DE ESTOQUE -->
+<!-- TELA 3: ESTOQUE -->
 <div id="telaEstoque" class="container hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h2>Controle de Estoque</h2>
-        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
-    </div>
-    
-    <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-        <button type="button" id="btnPDFEstoque" class="btn-pdf" style="width: auto; padding: 10px 16px;">📄 Exportar Relatório (PDF)</button>
-        <button type="button" onclick="abrirModalTransferencia()" class="btn-trans" style="width: auto; padding: 10px 16px;">🔄 Pedido de Transferência</button>
-    </div>
-
-    <div style="overflow-x: auto;">
-        <table id="tabelaEstoqueResultados">
-            <thead>
-                <tr>
-                    <th>Material</th>
-                    <th>Data da última entrada</th>
-                    <th>Quantidade da última entrada</th>
-                    <th>Quantidade anterior à entrada</th>
-                    <th>Data da última vez que teve ordem de serviço</th>
-                    <th>Quantidade atual do estoque</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td colspan="6" style="text-align:center;">Carregando estoque...</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <h2>Controle de Estoque</h2>
+    <button type="button" onclick="voltarMenu()" class="btn-secondary">Voltar ao Menu</button>
 </div>
 
-<!-- MODAL DE TRANSFERÊNCIA -->
-<div id="modalTransferencia" class="modal hidden">
-    <div class="modal-content">
-        <h2>Pedido de Transferência entre Filiais</h2>
-        <form id="formTransferencia" onsubmit="enviarTransferencia(event)">
-            <label for="transFilial">Filial de Destino:</label>
-            <select id="transFilial" required>
-                <option value="">Carregando filiais...</option>
-            </select>
-
-            <label for="transData">Data da Transferência:</label>
-            <input type="date" id="transData" required>
-
-            <label style="color: var(--brand-green); margin-top: 10px;">Selecione os Materiais e Quantidades:</label>
-            <div id="containerItensTransferencia" class="checkbox-grid" style="max-height: 250px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                Carregando materiais...
-            </div>
-
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button type="submit" id="btnSalvarTransferencia" style="background-color: var(--brand-green);">Confirmar Transferência</button>
-                <button type="button" onclick="fecharModalTransferencia()" class="btn-secondary">Cancelar</button>
-            </div>
-        </form>
-        <div id="msgTransferencia" style="margin-top: 10px; text-align: center; font-weight: bold;"></div>
-    </div>
-</div>
-
-<!-- MODAL DE CONFIRMAÇÃO / COMPROVANTE DE TRANSFERÊNCIA -->
-<div id="modalComprovanteTrans" class="modal hidden">
-    <div class="modal-content" style="text-align: center;">
-        <h2 style="color: var(--brand-green);">Confirmar Pedido de Transferência</h2>
-        <p style="font-size: 13px; color: #555;">Revise os itens e quantidades abaixo. Você pode editá-los antes de confirmar definitivamente na aba de pedidos/transferidos.</p>
-        
-        <div id="detalhesComprovanteEditavel" style="background: #f9f9f9; border: 1px solid #ddd; padding: 12px; border-radius: 6px; text-align: left; margin: 15px 0; font-size: 13px; max-height: 250px; overflow-y: auto;">
-            <!-- Preenchido via JS com inputs editáveis -->
-        </div>
-
-        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
-            <button type="button" onclick="salvarConfirmacaoDefinitivaTrans()" style="background-color: var(--success); width: auto; padding: 10px 16px;">✅ Salvar e Confirmar Definitivamente</button>
-            <button type="button" onclick="imprimirComprovanteTrans()" class="btn-pdf" style="width: auto; padding: 10px 16px;">🖨️ Imprimir / PDF</button>
-            <button type="button" onclick="fecharComprovanteTrans()" class="btn-secondary" style="width: auto; padding: 10px 16px;">Fechar</button>
-        </div>
-    </div>
-</div>
-
-<!-- TELA 6: FORMULÁRIO OS -->
+<!-- TELA 4: FORMULÁRIO -->
 <div id="telaForm" class="container hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h2>Nova Ordem de Serviço</h2>
-        <button type="button" onclick="voltarMenu()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 13px;">Voltar ao Menu</button>
-    </div>
+    <h2>Nova Ordem de Serviço</h2>
+    <button type="button" onclick="voltarMenu()" class="btn-secondary">Voltar ao Menu</button>
+</div>
 
-    <form id="formOS" onsubmit="enviarFormularioOS(event)">
-        <fieldset>
-            <legend>Identificação do Serviço</legend>
-            <div style="margin-bottom: 10px;">
-                <label for="controladora">Controladora:</label>
-                <input type="text" id="controladora" list="listaControladoras" placeholder="Selecione ou busque..." required autocomplete="off">
-                <datalist id="listaControladoras"></datalist>
-            </div>
-            <div>
-                <label>Tipo de Serviço:</label>
-                <div class="radio-group" style="margin-top: 8px;">
-                    <input type="radio" id="corretivo" name="tipo_servico" value="Corretivo" required>
-                    <label for="corretivo">Corretivo</label>
-                    <input type="radio" id="preventivo" name="tipo_servico" value="Preventivo">
-                    <label for="preventivo">Preventivo</label>
-                    <input type="radio" id="implantacao" name="tipo_servico" value="Implantação">
-                    <label for="implantacao">Implantação</label>
-                </div>
-            </div>
-        </fieldset>
+<script>
+    function esconderTodasAsTelas() {
+        document.getElementById('telaMenu').classList.add('hidden');
+        document.getElementById('telaRelatorio').classList.add('hidden');
+        document.getElementById('telaEstoque').classList.add('hidden');
+        document.getElementById('telaForm').classList.add('hidden');
+    }
 
-        <fieldset>
-            <legend>Período de Atendimento</legend>
-            <div class="grid-4">
-                <div><label>Data Inicial:</label><input type="date" id="data_inicial" required></div>
-                <div><label>Hora Inicial:</label><input type="time" id="hora_inicial" required></div>
-                <div><label>Data Final:</label><input type="date" id="data_final" required></div>
-                <div><label>Hora Final:</label><input type="time" id="hora_final" required></div>
-            </div>
-        </fieldset>
+    function voltarMenu() {
+        esconderTodasAsTelas();
+        document.getElementById('telaMenu').classList.remove('hidden');
+    }
 
-        <fieldset>
-            <legend>Detalhamento Técnico</legend>
-            <label>Código(s) do Serviço:</label>
-            <div id="containerCodigos" style="max-height: 160px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #fafafa;">
-                Carregando códigos...
-            </div>
-            <label>Descrição do Serviço:</label>
-            <textarea id="descricao_servico" rows="3" required></textarea>
-        </fieldset>
+    function abrirFormulario() {
+        esconderTodasAsTelas();
+        document.getElementById('telaForm').classList.remove('hidden');
+    }
 
-        <fieldset>
-            <legend>Manutenção Preventiva / Modelo de Controlador</legend>
-            <label for="modelo_controlador">Modelo de Controlador:</label>
-            <select id="modelo_controlador" required onchange="mudarModeloControlador(this.value)">
-                <option value="">Selecione o modelo...</option>
-                <option value="Contransin">Contransin</option>
-                <option value="Cross">Cross</option>
-                <option value="Dataprom">Dataprom</option>
-                <option value="Meng">Meng</option>
-                <option value="Tesc">Tesc</option>
-            </select>
+    function abrirRelatorio() {
+        esconderTodasAsTelas();
+        document.getElementById('telaRelatorio').classList.remove('hidden');
+    }
 
-            <div id="secaoDC" class="hidden" style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
-                <label style="color: var(--brand-green);">Medições de Tensão CC (Exclusivo Modelo Cross):</label>
-                <div class="grid-3">
-                    <div><label>7.5VDC:</label><input type="text" id="tensao_75vdc"></div>
-                    <div><label>12VDC:</label><input type="text" id="tensao_12vdc"></div>
-                    <div><label>24VDC:</label><input type="text" id="tensao_24vdc"></div>
-                </div>
-            </div>
+    function abrirEstoque() {
+        esconderTodasAsTelas();
+        document.getElementById('telaEstoque').classList.remove('hidden');
+    }
+</script>
 
-            <div style="margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 10px;">
-                <div class="grid-2">
-                    <div><label>Tensão CA:</label><input type="text" id="tensao_alternada" required></div>
-                    <div><label>Aterramento:</label><input type="text" id="aterramento" required></div>
-                </div>
-            </div>
-
-            <div style="margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 10px;">
-                <div class="grid-3">
-                    <div><label>Cabeamento:</label><input type="text" id="cabeamento" required></div>
-                    <div><label>Fusível:</label><input type="text" id="fusivel" required></div>
-                    <div><label
+</body>
+</html>
