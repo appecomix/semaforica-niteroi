@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ordem de Serviço - Ecomix</title>
-    <!-- Bibliotecas para PDF -->
+    <!-- Bibliotecas para PDF e Gráficos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root { 
             --bg: #e0f2f1;
@@ -17,10 +18,11 @@
             --info: #17a2b8;
             --warning: #ff9800;
             --primary: #007bff;
+            --purple: #6f42c1;
         }
         * { box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 10px; color: #333; }
-        .container { width: 100%; max-width: 920px; background: white; margin: 0 auto; padding: 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .container { width: 100%; max-width: 960px; background: white; margin: 0 auto; padding: 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .box-central { width: 100%; max-width: 440px; margin: 25px auto; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.12); text-align: center; border-top: 5px solid var(--brand-green); }
         .hidden { display: none !important; }
         
@@ -51,7 +53,7 @@
         button:hover, .btn-link:hover { background-color: var(--brand-green-hover); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         
-        .btn-menu { height: 52px; font-size: 16px; margin-bottom: 10px; }
+        .btn-menu { height: 50px; font-size: 15px; margin-bottom: 9px; }
         .btn-secondary { background-color: #6c757d; }
         .btn-secondary:hover { background-color: #5a6268; }
         .btn-whats { background-color: var(--whatsapp); }
@@ -64,6 +66,8 @@
         .btn-warning:hover { background-color: #e68a00; }
         .btn-info { background-color: var(--info); }
         .btn-info:hover { background-color: #138496; }
+        .btn-purple { background-color: var(--purple); }
+        .btn-purple:hover { background-color: #59359a; }
 
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; }
         .checkbox-item { display: flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 7px; border-radius: 4px; border: 1px solid #e2e6ea; }
@@ -80,6 +84,9 @@
         .modal-content { background: white; padding: 20px; border-radius: 8px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; }
         .sub-tabs { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
         .sub-tabs button { width: auto; flex: 1; margin: 0; padding: 10px; font-size: 14px; }
+        .card-destaque { background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 12px; margin-bottom: 12px; font-size: 14px; color: #1b5e20; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 15px; }
+        .chart-card { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; }
     </style>
 </head>
 <body>
@@ -114,10 +121,11 @@
     <div id="tituloFilialMenu" style="font-size: 16px; font-weight: bold; color: var(--brand-green); margin-bottom: 4px;"></div>
     <div id="infoUsuarioMenu" style="font-size: 12px; color: #666; margin-bottom: 18px;"></div>
 
-    <button type="button" id="btnIrNovaOS" class="btn-menu">📋 Nova Ordem de Serviço</button>
-    <button type="button" id="btnIrConsultaOS" class="btn-menu btn-primary">📄 Consulta Ordem de Serviço</button>
-    <a id="btnIrMapa" href="#" target="_blank" class="btn-link btn-menu btn-info">🌎 Mapa das Controladoras</a>
-    <button type="button" id="btnIrEstoque" class="btn-menu btn-warning">📦 Controle de Estoque</button>
+    <button type="button" id="btnIrNovaOS" class="btn-menu">1 - Nova Ordem de Serviço</button>
+    <button type="button" id="btnIrConsultaOS" class="btn-menu btn-primary">2 - Consulta Ordem de Serviço</button>
+    <a id="btnIrMapa" href="#" target="_blank" class="btn-link btn-menu btn-info">3 - Mapa das Controladoras</a>
+    <button type="button" id="btnIrEstoque" class="btn-menu btn-warning">4 - Controle de Estoque</button>
+    <button type="button" id="btnIrRelatorios" class="btn-menu btn-purple hidden">5 - Relatórios</button>
 
     <button type="button" id="btnSair" class="btn-secondary" style="margin-top: 15px; font-size: 13px; padding: 8px;">Sair / Trocar Filial</button>
 </div>
@@ -316,10 +324,10 @@
                 <label for="consEquipe">Equipe:</label>
                 <select id="consEquipe">
                     <option value="">Todas</option>
-                    <option value="1">01</option>
-                    <option value="2">02</option>
-                    <option value="3">03</option>
-                    <option value="4">04</option>
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
                 </select>
             </div>
         </div>
@@ -414,14 +422,18 @@
     <div id="subTelaTransferencia" class="hidden">
         <fieldset>
             <legend>Novo Pedido de Transferência entre Filiais</legend>
-            <div class="grid-2">
+            <div class="grid-3">
                 <div>
-                    <label for="transDestino">Solicitar para / Enviar para Filial:</label>
-                    <select id="transDestino">
+                    <label for="transOrigem">Filial Origem (Quem enviará o material):</label>
+                    <select id="transOrigem">
                         <option value="Niterói">Niterói</option>
                         <option value="Rio das Ostras">Rio das Ostras</option>
                         <option value="Arraial do Cabo">Arraial do Cabo</option>
                     </select>
+                </div>
+                <div>
+                    <label for="transDestinoFixo">Filial Destino (Receberá o material):</label>
+                    <input type="text" id="transDestinoFixo" readonly style="background: #e9ecef; font-weight: bold;">
                 </div>
                 <div>
                     <label for="transData">Data do Pedido:</label>
@@ -440,9 +452,66 @@
     </div>
 </div>
 
+<!-- TELA DE RELATÓRIOS GERENCIAIS (SUPERVISORES) -->
+<div id="telaRelatorios" class="container hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2>Relatórios Gerenciais</h2>
+        <button type="button" class="btnVoltarMenu btn-secondary" style="width: auto; padding: 7px 14px; font-size: 13px; margin: 0;">Voltar ao Menu</button>
+    </div>
+
+    <fieldset>
+        <legend>Seleção de Relatório e Filtros</legend>
+        <div class="grid-2">
+            <div>
+                <label for="relTipo">Tipo de Relatório:</label>
+                <select id="relTipo">
+                    <option value="os_periodo">2.1 - Ordens de Serviço por período por filial</option>
+                    <option value="uso_materiais">2.2 - Uso de Materiais por período por filial</option>
+                    <option value="uso_material_tecnico">2.3 - Uso de Material por técnico e filial (com assinatura)</option>
+                    <option value="estoque_filial">2.4 - Estoque atual por filial</option>
+                    <option value="atividade_equipe">2.5 - Atividade de equipe por período (Gráficos)</option>
+                    <option value="notas_entrada">2.6 - Nota de Entrada por período</option>
+                    <option value="entrada_materiais">2.7 - Entrada de Materiais por período</option>
+                    <option value="transferencias_periodo">2.8 - Transferências por período e filial</option>
+                </select>
+            </div>
+            <div>
+                <label for="relFilial">Filial:</label>
+                <select id="relFilial"></select>
+            </div>
+        </div>
+
+        <div class="grid-4" style="margin-top: 4px;">
+            <div id="boxRelDataIni">
+                <label for="relDataInicio">Data Inicial:</label>
+                <input type="date" id="relDataInicio">
+            </div>
+            <div id="boxRelDataFim">
+                <label for="relDataFim">Data Final:</label>
+                <input type="date" id="relDataFim">
+            </div>
+            <div id="boxRelTecnico" class="hidden">
+                <label for="relTecnico">Técnico:</label>
+                <select id="relTecnico"><option value="">Todos os Técnicos</option></select>
+            </div>
+            <div id="boxRelMaterial" class="hidden">
+                <label for="relMaterial">Material:</label>
+                <select id="relMaterial"><option value="">Todos os Materiais</option></select>
+            </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 8px;">
+            <button type="button" id="btnGerarRelatorio" class="btn-primary">📊 Gerar Relatório</button>
+            <button type="button" id="btnExportarRelatorioPDF" class="btn-pdf hidden">📄 Exportar Relatório em PDF</button>
+        </div>
+    </fieldset>
+
+    <div id="areaResultadoRelatorio"></div>
+</div>
+
 <script>
-    // URL DE WEB APP OFICIAL ATUALIZADA
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwZkOGzMvWRBcR4kLawEI2RpIFlLBScCDfi5VDfCI5HuBZnuw2gtvPe-4_XgVh_QoQP/exec";
+    // URL DE WEB APP OFICIAL
+    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz9inqXnK7GVNdEcPRYREoxMQhUektFgPrRzaKiYFVfK1JOiCnnjdM12gVmqBEK-jKn/exec";
 
     let sessao = {
         usuario: "",
@@ -464,11 +533,14 @@
     let osNumeroSalvo = null;
     let cacheConsultaOS = [];
     let cacheEstoqueAtual = [];
+    let cacheRelatorioAtual = null;
+    let chartBarrasInst = null;
+    let chartPizzaInst = null;
 
     // --- NORMALIZAÇÃO ESTRITA DE DATA PARA dd/mm/aaaa ---
     function normalizarDataBR(valor) {
         const s = String(valor || "").trim();
-        if (!s) return "";
+        if (!s || s === "-") return s === "-" ? "-" : "";
         const matchBR = s.match(/(\d{2}\/\d{2}\/\d{4})/);
         if (matchBR) return matchBR[1];
         const matchISO = s.match(/(\d{4})-(\d{2})-(\d{2})/);
@@ -476,9 +548,49 @@
         return s;
     }
 
+    function formatarDataISOparaBR(iso) {
+        if (!iso || iso === "-") return "-";
+        return normalizarDataBR(iso);
+    }
+
+    // --- CABEÇALHO E RODAPÉ PADRÃO PDF ECOMIX ---
+    function desenharCabecalhoPDFEcomix(doc, tituloRelatorio, subtituloInfo) {
+        const imgLogo = document.getElementById("logoPrincipal");
+        const agora = new Date();
+        const pad = n => String(n).padStart(2, "0");
+        const dataRel = `${pad(agora.getDate())}/${pad(agora.getMonth() + 1)}/${agora.getFullYear()} ${pad(agora.getHours())}:${pad(agora.getMinutes())}`;
+
+        if (imgLogo) {
+            try {
+                doc.addImage(imgLogo, "PNG", 14, 9, 34, 10);
+            } catch (e) {}
+        }
+
+        doc.setFontSize(13);
+        doc.setTextColor(0, 105, 92);
+        doc.setFont("helvetica", "bold");
+        doc.text("Ecomix Gestão e Planejamento", 52, 14);
+
+        doc.setFontSize(10);
+        doc.setTextColor(30, 30, 30);
+        doc.setFont("helvetica", "bold");
+        doc.text(tituloRelatorio, 52, 19);
+
+        doc.setFontSize(8.5);
+        doc.setTextColor(80, 80, 80);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${subtituloInfo}  |  Emitido em: ${dataRel}`, 14, 24);
+
+        doc.setDrawColor(0, 137, 123);
+        doc.setLineWidth(0.5);
+        doc.line(14, 26.5, 196, 26.5);
+
+        return 31;
+    }
+
     // --- FUNÇÕES DE NAVEGAÇÃO ---
     function abrirTela(id) {
-        ["telaLogin", "telaMenu", "telaNovaOS", "telaRevisaoOS", "telaConsultaOS", "telaEstoque"].forEach(t => {
+        ["telaLogin", "telaMenu", "telaNovaOS", "telaRevisaoOS", "telaConsultaOS", "telaEstoque", "telaRelatorios"].forEach(t => {
             document.getElementById(t).classList.add("hidden");
         });
         document.getElementById(id).classList.remove("hidden");
@@ -529,6 +641,13 @@
                 document.getElementById("tituloFilialMenu").innerText = "Filial: " + sessao.filial;
                 document.getElementById("infoUsuarioMenu").innerText = `${sessao.perfil.toUpperCase()}: ${sessao.usuario}`;
                 document.getElementById("btnIrMapa").href = sessao.mapaUrl;
+
+                // Menu 5 - Relatórios exclusivo para Supervisores
+                if (sessao.perfil === "supervisor") {
+                    document.getElementById("btnIrRelatorios").classList.remove("hidden");
+                } else {
+                    document.getElementById("btnIrRelatorios").classList.add("hidden");
+                }
 
                 abrirTela("telaMenu");
                 carregarDadosIniciaisDaFilial(sessao.filial);
@@ -627,6 +746,7 @@
         });
     }
 
+    // --- ITEM 4: SOMENTE A CROSS TERÁ MEDIÇÕES DE TENSÃO DC ---
     document.getElementById("osModeloControlador").addEventListener("change", function() {
         const mod = this.value;
         const container = document.getElementById("camposDinamicosModelo");
@@ -650,9 +770,6 @@
             );
         } else if (mod.toLowerCase() === "dataprom") {
             campos.push(
-                { id: "osTensaoMais5", label: "Tensão +5V:" },
-                { id: "osTensaoMenos5", label: "Tensão -5V:" },
-                { id: "osTensaoMais12", label: "Tensão +12V:" },
                 { id: "osFusiveis", label: "Fusíveis:" },
                 { id: "osPadronizada", label: "Padronizada:" },
                 { id: "osNobreak", label: "Nobreak:" }
@@ -794,9 +911,9 @@
             tensao_75vcc: getVal("osTensao75"),
             tensao_12vcc: getVal("osTensao12"),
             tensao_24vcc: getVal("osTensao24"),
-            tensao_mais5v: getVal("osTensaoMais5"),
-            tensao_menos5v: getVal("osTensaoMenos5"),
-            tensao_mais12v: getVal("osTensaoMais12"),
+            tensao_mais5v: "",
+            tensao_menos5v: "",
+            tensao_mais12v: "",
             cabo_flex: getVal("osCaboFlex"),
             fusiveis: getVal("osFusiveis"),
             nobreak: getVal("osNobreak"),
@@ -840,7 +957,7 @@
         if (d.modelo_controlador.toLowerCase() === "cross") {
             html += `<div class="revisao-linha"><b>Saída CC:</b> 7,5V: ${d.tensao_75vcc} | 12V: ${d.tensao_12vcc} | 24V: ${d.tensao_24vcc} | <b>Fusíveis:</b> ${d.fusiveis} | <b>Nobreak:</b> ${d.nobreak} | <b>Padronizada:</b> ${d.padronizada}</div>`;
         } else if (d.modelo_controlador.toLowerCase() === "dataprom") {
-            html += `<div class="revisao-linha"><b>Saída CC:</b> +5V: ${d.tensao_mais5v} | -5V: ${d.tensao_menos5v} | +12V: ${d.tensao_mais12v} | <b>Fusíveis:</b> ${d.fusiveis} | <b>Nobreak:</b> ${d.nobreak} | <b>Padronizada:</b> ${d.padronizada}</div>`;
+            html += `<div class="revisao-linha"><b>Fusíveis:</b> ${d.fusiveis} | <b>Nobreak:</b> ${d.nobreak} | <b>Padronizada:</b> ${d.padronizada}</div>`;
         } else if (d.modelo_controlador.toLowerCase() === "tesc") {
             html += `<div class="revisao-linha"><b>Cabo Flex:</b> ${d.cabo_flex} | <b>Fusíveis:</b> ${d.fusiveis} | <b>Nobreak:</b> ${d.nobreak}</div>`;
         }
@@ -923,11 +1040,7 @@
         } else if (mod === "dataprom") {
             msg += ` *Nobreak:* ${d.nobreak}\n` +
                    ` *Fusíveis:* ${d.fusiveis}\n` +
-                   ` *Padronizada:* ${d.padronizada}\n` +
-                   ` *Saída da fonte de Alimentação (CC):*\n` +
-                   ` *+5V:* ${d.tensao_mais5v}\n` +
-                   ` *-5V:* ${d.tensao_menos5v}\n` +
-                   ` *+12V:* ${d.tensao_mais12v}\n\n`;
+                   ` *Padronizada:* ${d.padronizada}\n\n`;
         } else if (mod === "tesc") {
             msg += ` *Cabo Flex:* ${d.cabo_flex}\n` +
                    ` *Nobreak:* ${d.nobreak}\n` +
@@ -1083,7 +1196,7 @@
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, "_blank");
     }
 
-    // --- PDF DA ORDEM DE SERVIÇO ---
+    // --- ITEM 3: PDF DA ORDEM DE SERVIÇO COM VISUAL PADRÃO DO RELATÓRIO DE ESTOQUE ---
     function gerarPDFOrdemServico(idx) {
         const os = cacheConsultaOS[idx];
         const { jsPDF } = window.jspdf;
@@ -1091,219 +1204,159 @@
 
         const dtIni = normalizarDataBR(os.data_inicial);
         const dtFin = normalizarDataBR(os.data_final);
+        const filialAtiva = (sessao.perfil === "supervisor") ? document.getElementById("consFilial").value : sessao.filial;
 
-        const fillHeader = [217, 217, 217];
-        const textDark = [20, 20, 20];
-        const borderDark = [60, 60, 60];
+        const startY = desenharCabecalhoPDFEcomix(
+            doc,
+            `ORDEM DE SERVIÇO Nº SM ${os.numero_os || ""}`,
+            `Filial: ${filialAtiva}  |  Modelo: ${os.modelo_controlador || "-"}`
+        );
+
+        const brandFill = [0, 137, 123];
+        const subHeaderFill = [232, 245, 243];
+        const textDark = [30, 30, 30];
+        const borderSoft = [190, 210, 207];
 
         const tipoNorm = (os.tipo_servico || "").toLowerCase();
-        const isCorretivo = tipoNorm.includes("corretivo") ? "X" : "";
-        const isPreventivo = tipoNorm.includes("preventivo") ? "X" : "";
-        const isImplantacao = (tipoNorm.includes("implantação") || tipoNorm.includes("implantacao")) ? "X" : "";
+        const isCorretivo = tipoNorm.includes("corretivo") ? "( X )" : "(   )";
+        const isPreventivo = tipoNorm.includes("preventivo") ? "( X )" : "(   )";
+        const isImplantacao = (tipoNorm.includes("implantação") || tipoNorm.includes("implantacao")) ? "( X )" : "(   )";
 
         const statusCtrlNorm = (os.status_controladora || "").toLowerCase();
-        const isOperacional = statusCtrlNorm.includes("operacional") ? "X" : "";
-        const isInoperante = statusCtrlNorm.includes("inoperante") ? "X" : "";
+        const isOperacional = statusCtrlNorm.includes("operacional") ? "( X )" : "(   )";
+        const isInoperante = statusCtrlNorm.includes("inoperante") ? "( X )" : "(   )";
 
         const statusServNorm = (os.status_servico || "").toLowerCase();
-        const isConcluido = (statusServNorm.includes("concluído") || statusServNorm.includes("concluido")) ? "X" : "";
-        const isPendente = statusServNorm.includes("pendente") ? "X" : "";
+        const isConcluido = (statusServNorm.includes("concluído") || statusServNorm.includes("concluido")) ? "( X )" : "(   )";
+        const isPendente = statusServNorm.includes("pendente") ? "( X )" : "(   )";
 
         const modNorm = (os.modelo_controlador || "").toLowerCase();
-        let lblCC1 = "TENSÃO 7,5VCC", valCC1 = os.tensao_75vcc || "";
-        let lblCC2 = "TENSÃO 12VCC", valCC2 = os.tensao_12vcc || "";
-        let lblCC3 = "TENSÃO 24VCC", valCC3 = os.tensao_24vcc || "";
+        const isCross = modNorm === "cross";
 
-        if (modNorm === "dataprom") {
-            lblCC1 = "TENSÃO +5V"; valCC1 = os.tensao_mais5v || "";
-            lblCC2 = "TENSÃO -5V"; valCC2 = os.tensao_menos5v || "";
-            lblCC3 = "TENSÃO +12V"; valCC3 = os.tensao_mais12v || "";
-        } else if (modNorm === "tesc") {
-            lblCC1 = "CABO FLEX"; valCC1 = os.cabo_flex || "";
-            lblCC2 = ""; valCC2 = "";
-            lblCC3 = ""; valCC3 = "";
-        }
-
-        const cellTitle = (txt) => ({
+        const secTitle = (txt) => ({
             content: txt,
             colSpan: 12,
-            styles: { fillColor: fillHeader, textColor: textDark, fontStyle: "bold", halign: "center", cellPadding: 1.3 }
+            styles: { fillColor: brandFill, textColor: [255, 255, 255], fontStyle: "bold", halign: "left", cellPadding: 1.5 }
+        });
+
+        const lblCell = (txt, span) => ({
+            content: txt,
+            colSpan: span,
+            styles: { fillColor: subHeaderFill, textColor: [0, 77, 64], fontStyle: "bold" }
         });
 
         const body = [
-            // Cabeçalho Superior
-            [
-                { content: "", colSpan: 3, styles: { minCellHeight: 11 } },
-                { content: "ORDEM DE SERVIÇO", colSpan: 6, styles: { fontSize: 12, fontStyle: "bold", halign: "center", valign: "middle" } },
-                { content: "Nº SM", colSpan: 2, styles: { fillColor: fillHeader, fontStyle: "bold", halign: "center", valign: "middle" } },
-                { content: String(os.numero_os || ""), colSpan: 1, styles: { fontStyle: "bold", halign: "center", valign: "middle" } }
-            ],
             // CONTROLADORA
-            [cellTitle("CONTROLADORA")],
-            [{ content: os.controladora || "", colSpan: 12, styles: { cellPadding: 1.8 } }],
-
-            // TIPO DO SERVIÇO
-            [cellTitle("TIPO DO SERVIÇO")],
+            [secTitle("1. IDENTIFICAÇÃO DA CONTROLADORA E TIPO DE SERVIÇO")],
+            [lblCell("CONTROLADORA", 3), { content: os.controladora || "", colSpan: 9 }],
             [
-                { content: "CORRETIVO", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
-                { content: isCorretivo, colSpan: 1, styles: { fontStyle: "bold", halign: "center" } },
-                { content: "PREVENTIVO", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
-                { content: isPreventivo, colSpan: 1, styles: { fontStyle: "bold", halign: "center" } },
-                { content: "IMPLANTAÇÃO", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
-                { content: isImplantacao, colSpan: 1, styles: { fontStyle: "bold", halign: "center" } }
+                lblCell("TIPO DE SERVIÇO", 3),
+                { content: `${isCorretivo} CORRETIVO`, colSpan: 3, styles: { halign: "center", fontStyle: "bold" } },
+                { content: `${isPreventivo} PREVENTIVO`, colSpan: 3, styles: { halign: "center", fontStyle: "bold" } },
+                { content: `${isImplantacao} IMPLANTAÇÃO`, colSpan: 3, styles: { halign: "center", fontStyle: "bold" } }
             ],
+            ...(os.codigos_servico ? [[lblCell("CÓDIGO DO SERVIÇO", 3), { content: os.codigos_servico, colSpan: 9 }]] : []),
 
             // PERÍODO DA ATIVIDADE
-            [cellTitle("PERÍODO DA ATIVIDADE")],
+            [secTitle("2. PERÍODO DA ATIVIDADE")],
             [
-                { content: "INÍCIO", colSpan: 5, styles: { fontStyle: "bold", halign: "center" } },
-                { content: "", colSpan: 1 },
-                { content: "TÉRMINO", colSpan: 6, styles: { fontStyle: "bold", halign: "center" } }
-            ],
-            [
-                { content: "DATA", colSpan: 1, styles: { fontStyle: "bold", halign: "right" } },
-                { content: dtIni, colSpan: 2, styles: { halign: "center" } },
-                { content: "HORA", colSpan: 1, styles: { fontStyle: "bold", halign: "right" } },
-                { content: os.hora_inicial || "", colSpan: 1, styles: { halign: "center" } },
-                { content: "", colSpan: 1 },
-                { content: "DATA", colSpan: 2, styles: { fontStyle: "bold", halign: "right" } },
-                { content: dtFin, colSpan: 2, styles: { halign: "center" } },
-                { content: "HORA", colSpan: 1, styles: { fontStyle: "bold", halign: "right" } },
-                { content: os.hora_final || "", colSpan: 1, styles: { halign: "center" } }
+                lblCell("DATA INÍCIO", 2), { content: dtIni, colSpan: 2, styles: { halign: "center" } },
+                lblCell("HORA INÍCIO", 2), { content: os.hora_inicial || "", colSpan: 1, styles: { halign: "center" } },
+                lblCell("DATA TÉRMINO", 2), { content: dtFin, colSpan: 2, styles: { halign: "center" } },
+                lblCell("HORA", 1), { content: os.hora_final || "", colSpan: 1, styles: { halign: "center" } }
             ],
 
-            // CÓDIGO DO SERVIÇO
-            [
-                { content: "CÓDIGO DO SERVIÇO", colSpan: 3, styles: { fillColor: fillHeader, fontStyle: "bold", halign: "center" } },
-                { content: os.codigos_servico || "", colSpan: 9, styles: { halign: "left" } }
-            ],
-
-            // DESCRIÇÃO DO SERVIÇO REALIZADO
-            [cellTitle("DESCRIÇÃO DO SERVIÇO REALIZADO")],
-            [{ content: os.descricao_servico || "", colSpan: 12, styles: { cellPadding: 2, minCellHeight: 11 } }],
+            // DESCRIÇÃO DO SERVIÇO
+            [secTitle("3. DESCRIÇÃO DO SERVIÇO REALIZADO")],
+            [{ content: os.descricao_servico || "", colSpan: 12, styles: { minCellHeight: 10, cellPadding: 2 } }],
 
             // MANUTENÇÃO PREVENTIVA
-            [cellTitle("MANUTENÇÃO PREVENTIVA")],
+            [secTitle("4. MANUTENÇÃO PREVENTIVA E MEDIÇÕES")],
             [
-                { content: os.tensao_ca || "", colSpan: 2, styles: { halign: "left" } },
-                { content: "TENSÃO (CA)", colSpan: 3, styles: { fontStyle: "bold" } },
-                { content: "", colSpan: 1 },
-                { content: os.aterramento || "", colSpan: 2, styles: { halign: "left" } },
-                { content: "ATERRAMENTO", colSpan: 4, styles: { fontStyle: "bold" } }
+                lblCell("TENSÃO (CA)", 3), { content: os.tensao_ca || "-", colSpan: 3 },
+                lblCell("ATERRAMENTO", 3), { content: os.aterramento || "-", colSpan: 3 }
             ],
+            ...(isCross ? [[
+                lblCell("TENSÃO 7,5VCC", 2), { content: os.tensao_75vcc || "-", colSpan: 2 },
+                lblCell("TENSÃO 12VCC", 2), { content: os.tensao_12vcc || "-", colSpan: 2 },
+                lblCell("TENSÃO 24VCC", 2), { content: os.tensao_24vcc || "-", colSpan: 2 }
+            ]] : []),
+            ...(modNorm === "tesc" ? [[
+                lblCell("CABO FLEX", 3), { content: os.cabo_flex || "-", colSpan: 9 }
+            ]] : []),
             [
-                { content: valCC1, colSpan: 2, styles: { halign: "left" } },
-                { content: lblCC1, colSpan: 3, styles: { fontStyle: "bold" } },
-                { content: "", colSpan: 1 },
-                { content: os.fusiveis || "", colSpan: 2, styles: { halign: "left" } },
-                { content: "FUSÍVEIS", colSpan: 4, styles: { fontStyle: "bold" } }
-            ],
-            [
-                { content: valCC2, colSpan: 2, styles: { halign: "left" } },
-                { content: lblCC2, colSpan: 3, styles: { fontStyle: "bold" } },
-                { content: "", colSpan: 1 },
-                { content: os.padronizada || "", colSpan: 2, styles: { halign: "left" } },
-                { content: "PADRONIZADA", colSpan: 4, styles: { fontStyle: "bold" } }
-            ],
-            [
-                { content: valCC3, colSpan: 2, styles: { halign: "left" } },
-                { content: lblCC3, colSpan: 3, styles: { fontStyle: "bold" } },
-                { content: "", colSpan: 1 },
-                { content: os.nobreak || "", colSpan: 2, styles: { halign: "left" } },
-                { content: "NOBREAK", colSpan: 4, styles: { fontStyle: "bold" } }
+                lblCell("FUSÍVEIS", 2), { content: os.fusiveis || "-", colSpan: 2 },
+                lblCell("PADRONIZADA", 2), { content: os.padronizada || "-", colSpan: 2 },
+                lblCell("NOBREAK", 2), { content: os.nobreak || "-", colSpan: 2 }
             ],
 
-            // COMPONENTES EM LINHA
-            [cellTitle("CABEAMENTO")],
-            [{ content: os.cabeamento || "", colSpan: 12 }],
-
-            [cellTitle("INVÓLUCRO")],
-            [{ content: os.involucro || "", colSpan: 12 }],
-
-            [cellTitle("GABINETES")],
-            [{ content: os.gabinetes || "", colSpan: 12 }],
-
-            [cellTitle("PLACAS DE CPU E POTÊNCIA")],
-            [{ content: os.placas_cpu_potencia || "", colSpan: 12 }],
-
-            [cellTitle("GRUPOS FOCAIS")],
-            [{ content: os.grupos_focais || "", colSpan: 12 }],
-
-            [cellTitle("COLUNAS")],
-            [{ content: os.colunas || "", colSpan: 12 }],
-
-            [cellTitle("BRAÇOS")],
-            [{ content: os.bracos || "", colSpan: 12 }],
-
-            // STATUS DA CONTROLADORA E SERVIÇO
+            // CONDIÇÕES GERAIS DO CIRCUITO
+            [secTitle("5. CONDIÇÕES GERAIS DOS COMPONENTES")],
             [
-                { content: "STATUS DA CONTROLADORA", colSpan: 4, styles: { fontStyle: "bold" } },
-                { content: "OPERACIONAL", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
-                { content: isOperacional, colSpan: 1, styles: { fontStyle: "bold", halign: "center" } },
-                { content: "INOPERANTE", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
-                { content: isInoperante, colSpan: 1, styles: { fontStyle: "bold", halign: "center" } }
+                lblCell("CABEAMENTO", 3), { content: os.cabeamento || "-", colSpan: 3 },
+                lblCell("INVÓLUCRO", 3), { content: os.involucro || "-", colSpan: 3 }
             ],
             [
-                { content: "STATUS DO SERVIÇO", colSpan: 4, styles: { fontStyle: "bold" } },
-                { content: "CONCLUÍDO", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
-                { content: isConcluido, colSpan: 1, styles: { fontStyle: "bold", halign: "center" } },
-                { content: "PENDENTE", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
-                { content: isPendente, colSpan: 1, styles: { fontStyle: "bold", halign: "center" } }
-            ],
-
-            // PENDÊNCIA
-            [cellTitle("PENDÊNCIA")],
-            [{ content: os.pendencia || "", colSpan: 12, styles: { minCellHeight: 7 } }],
-
-            // MATERIAL UTILIZADO
-            [cellTitle("MATERIAL UTILIZADO")],
-            [{ content: os.material_texto || "Nenhum material utilizado", colSpan: 12, styles: { minCellHeight: 7 } }],
-
-            // OBSERVAÇÃO
-            [cellTitle("OBSERVAÇÃO")],
-            [{ content: os.observacao || "", colSpan: 12, styles: { cellPadding: 2, minCellHeight: 12 } }],
-
-            // IDENTIFICAÇÃO
-            [cellTitle("IDENTIFICAÇÃO")],
-            [
-                { content: "EQUIPE", colSpan: 2, styles: { fontStyle: "bold" } },
-                { content: os.equipe || "", colSpan: 2, styles: { halign: "center" } },
-                { content: "TÉCNICO RESPONSÁVEL", colSpan: 4, styles: { fontStyle: "bold" } },
-                { content: os.tecnico || "", colSpan: 4 }
+                lblCell("GABINETES", 3), { content: os.gabinetes || "-", colSpan: 3 },
+                lblCell("PLACAS CPU/POT.", 3), { content: os.placas_cpu_potencia || "-", colSpan: 3 }
             ],
             [
-                { content: "SUPERVISOR", colSpan: 3, styles: { fontStyle: "bold" } },
-                { content: "", colSpan: 9 }
+                lblCell("GRUPOS FOCAIS", 3), { content: os.grupos_focais || "-", colSpan: 3 },
+                lblCell("COLUNAS", 3), { content: os.colunas || "-", colSpan: 3 }
+            ],
+            [
+                lblCell("BRAÇOS", 3), { content: os.bracos || "-", colSpan: 9 }
+            ],
+
+            // STATUS E PENDÊNCIA
+            [secTitle("6. STATUS PÓS-INTERVENÇÃO")],
+            [
+                lblCell("STATUS CONTROLADORA", 4),
+                { content: `${isOperacional} OPERACIONAL`, colSpan: 4, styles: { halign: "center", fontStyle: "bold" } },
+                { content: `${isInoperante} INOPERANTE`, colSpan: 4, styles: { halign: "center", fontStyle: "bold" } }
+            ],
+            [
+                lblCell("STATUS DO SERVIÇO", 4),
+                { content: `${isConcluido} CONCLUÍDO`, colSpan: 4, styles: { halign: "center", fontStyle: "bold" } },
+                { content: `${isPendente} PENDENTE`, colSpan: 4, styles: { halign: "center", fontStyle: "bold" } }
+            ],
+            [lblCell("PENDÊNCIA", 3), { content: os.pendencia || "Nenhuma pendência registrada", colSpan: 9 }],
+
+            // MATERIAL E OBSERVAÇÃO
+            [secTitle("7. MATERIAL UTILIZADO E OBSERVAÇÕES")],
+            [lblCell("MATERIAL UTILIZADO", 3), { content: os.material_texto || "Nenhum material utilizado", colSpan: 9 }],
+            [lblCell("OBSERVAÇÃO", 3), { content: os.observacao || "", colSpan: 9, styles: { minCellHeight: 14, cellPadding: 2 } }],
+
+            // IDENTIFICAÇÃO E ASSINATURAS
+            [secTitle("8. IDENTIFICAÇÃO E VISTO")],
+            [
+                lblCell("EQUIPE", 2), { content: os.equipe || "", colSpan: 2, styles: { halign: "center", fontStyle: "bold" } },
+                lblCell("TÉCNICO RESPONSÁVEL", 4), { content: os.tecnico || "", colSpan: 4 }
+            ],
+            [
+                { content: "Assinatura do Técnico:\n\n_________________________________________", colSpan: 6, styles: { minCellHeight: 14, valign: "bottom" } },
+                { content: "Visto do Supervisor:\n\n_________________________________________", colSpan: 6, styles: { minCellHeight: 14, valign: "bottom" } }
             ]
         ];
 
-        const imgLogo = document.getElementById("logoPrincipal");
-
         doc.autoTable({
-            startY: 8,
-            margin: { left: 10, right: 10, bottom: 8 },
+            startY: startY,
+            margin: { left: 14, right: 14, bottom: 10 },
             body: body,
             theme: "grid",
             styles: {
                 font: "helvetica",
                 fontSize: 8.5,
                 textColor: textDark,
-                lineColor: borderDark,
+                lineColor: borderSoft,
                 lineWidth: 0.25,
-                cellPadding: 1.4,
+                cellPadding: 1.6,
                 valign: "middle",
                 overflow: "linebreak"
-            },
-            didDrawCell: function(data) {
-                if (data.row.index === 0 && data.column.index === 0 && imgLogo) {
-                    try {
-                        doc.addImage(imgLogo, "PNG", data.cell.x + 2, data.cell.y + 1.2, 42, 8.5);
-                    } catch (e) {}
-                }
             }
         });
 
-        doc.save(`OS_${os.numero_os}.pdf`);
+        doc.save(`OS_${os.numero_os}_${filialAtiva}.pdf`);
     }
 
     // --- ESTOQUE E SUB-ABAS ---
@@ -1335,10 +1388,32 @@
         carregarDadosEstoque();
     });
 
-    document.getElementById("estFilialSelect").addEventListener("change", carregarDadosEstoque);
+    document.getElementById("estFilialSelect").addEventListener("change", () => {
+        carregarDadosEstoque();
+        if (!document.getElementById("subTelaTransferencia").classList.contains("hidden")) {
+            atualizarCamposTransferencia();
+            carregarPedidosTransferencia();
+        }
+    });
 
     function getFilialEstoqueAtiva() {
         return (sessao.perfil === "supervisor") ? document.getElementById("estFilialSelect").value : sessao.filial;
+    }
+
+    // --- ITEM 1: DESTINO = FILIAL LOGADA/ATIVA, ORIGEM = FILIAL QUE ENVIARÁ ---
+    function atualizarCamposTransferencia() {
+        const filialLogadaAtiva = getFilialEstoqueAtiva();
+        document.getElementById("transDestinoFixo").value = filialLogadaAtiva;
+
+        const selOrigem = document.getElementById("transOrigem");
+        const opcoesFiliais = ["Niterói", "Rio das Ostras", "Arraial do Cabo"].filter(f => f !== filialLogadaAtiva);
+        selOrigem.innerHTML = "";
+        opcoesFiliais.forEach(f => {
+            const opt = document.createElement("option");
+            opt.value = f;
+            opt.innerText = f;
+            selOrigem.appendChild(opt);
+        });
     }
 
     function ativarAbaEstoque(aba) {
@@ -1357,6 +1432,7 @@
         } else if (aba === "trans") {
             document.getElementById("subTelaTransferencia").classList.remove("hidden");
             document.getElementById("tabBtnTransferencia").classList.replace("btn-secondary", "btn-primary");
+            atualizarCamposTransferencia();
             carregarPedidosTransferencia();
         }
     }
@@ -1364,11 +1440,6 @@
     document.getElementById("tabBtnEstoqueAtual").addEventListener("click", () => ativarAbaEstoque("atual"));
     document.getElementById("tabBtnEntradaNF").addEventListener("click", () => ativarAbaEstoque("nf"));
     document.getElementById("tabBtnTransferencia").addEventListener("click", () => ativarAbaEstoque("trans"));
-
-  function formatarDataISOparaBR(iso) {
-        if (!iso || iso === "-") return "-";
-        return normalizarDataBR(iso);
-    }
 
     function carregarDadosEstoque() {
         const filial = getFilialEstoqueAtiva();
@@ -1472,13 +1543,13 @@
         });
     });
 
-    // --- TRANSFERÊNCIA ---
+    // --- TRANSFERÊNCIA (DESTINO = FILIAL LOGADA, ORIGEM = FILIAL QUE ENVIARÁ) ---
     document.getElementById("btnEnviarPedidoTrans").addEventListener("click", function() {
-        const origem = getFilialEstoqueAtiva();
-        const destino = document.getElementById("transDestino").value;
+        const origem = document.getElementById("transOrigem").value;
+        const destino = getFilialEstoqueAtiva();
         const dataPedISO = document.getElementById("transData").value;
 
-        if (origem === destino) return alert("A filial de destino deve ser diferente da filial atual.");
+        if (origem === destino) return alert("A filial de origem deve ser diferente da filial de destino.");
         if (!dataPedISO) return alert("Informe a data do pedido.");
 
         const p = dataPedISO.split("-");
@@ -1494,7 +1565,7 @@
             }
         });
 
-        if (itens.length === 0) return alert("Selecione ao menos um material para transferir.");
+        if (itens.length === 0) return alert("Selecione ao menos um material para solicitar transferência.");
 
         this.disabled = true;
         fetch(URL_APPS_SCRIPT, {
@@ -1512,7 +1583,7 @@
         .then(r => r.json())
         .then(() => {
             this.disabled = false;
-            alert("Pedido de transferência enviado com sucesso!");
+            alert(`Solicitação de transferência enviada! Origem: ${origem} ➔ Destino: ${destino}`);
             document.getElementById("transData").value = "";
             carregarPedidosTransferencia();
         });
@@ -1548,14 +1619,14 @@
                     if (p.status === "Pendente") {
                         actionsHtml = `
                             <div class="grid-2" style="margin-top:10px; gap:8px;">
-                                <button type="button" class="btn-primary" style="font-size:13px; padding:8px;" onclick='responderTransferencia(${JSON.stringify(p)}, ${idx}, "Confirmado")'>✅ Confirmar</button>
+                                <button type="button" class="btn-primary" style="font-size:13px; padding:8px;" onclick='responderTransferencia(${JSON.stringify(p)}, ${idx}, "Confirmado")'>✅ Confirmar Envio</button>
                                 <button type="button" class="btn-pdf" style="font-size:13px; padding:8px;" onclick='responderTransferencia(${JSON.stringify(p)}, ${idx}, "Cancelado")'>❌ Cancelar</button>
                             </div>`;
                     }
 
                     div.innerHTML = `
                         <div style="font-size:14px; margin-bottom:5px;"><b>Pedido:</b> ${p.id_pedido} | <b>Data:</b> ${formatarDataISOparaBR(p.data_pedido)}</div>
-                        <div style="font-size:13px; margin-bottom:5px;"><b>Origem:</b> ${p.origem} ➔ <b>Destino:</b> ${p.destino}</div>
+                        <div style="font-size:13px; margin-bottom:5px;"><b>Origem (Envia):</b> ${p.origem} ➔ <b>Destino (Recebe):</b> ${p.destino}</div>
                         <div style="font-size:13px; margin-bottom:5px;"><b>Status:</b> <span style="font-weight:bold; color:${p.status === 'Confirmado' ? 'green' : (p.status === 'Cancelado' ? 'red' : 'orange')}">${p.status}</span></div>
                         <div style="margin-top:8px; border-top:1px solid #eee; padding-top:5px;">${itensHtml}</div>
                         ${actionsHtml}
@@ -1574,7 +1645,7 @@
             };
         });
 
-        if (novoStatus === "Confirmado" && !confirm("Deseja confirmar o recebimento/envio desta transferência? O estoque será atualizado.")) return;
+        if (novoStatus === "Confirmado" && !confirm(`Confirmar envio de ${pedido.origem} para ${pedido.destino}? O material sairá de ${pedido.origem} e entrará em ${pedido.destino}.`)) return;
         if (novoStatus === "Cancelado" && !confirm("Deseja cancelar este pedido de transferência?")) return;
 
         fetch(URL_APPS_SCRIPT, {
@@ -1609,20 +1680,11 @@
         const doc = new jsPDF();
         const filial = getFilialEstoqueAtiva();
 
-        const agora = new Date();
-        const pad = n => String(n).padStart(2, "0");
-        const dataRel = `${pad(agora.getDate())}/${pad(agora.getMonth() + 1)}/${agora.getFullYear()} ${pad(agora.getHours())}:${pad(agora.getMinutes())}`;
-
-        doc.setFontSize(14);
-        doc.setTextColor(0, 105, 92);
-        doc.setFont("helvetica", "bold");
-        doc.text("Ecomix Gestão e Planejamento", 14, 15);
-        
-        doc.setFontSize(11);
-        doc.setTextColor(30, 30, 30);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Relatório de Estoque Atual - Filial: ${filial} (Gerado em: ${dataRel})`, 14, 21);
-        doc.line(14, 25, 196, 25);
+        const startY = desenharCabecalhoPDFEcomix(
+            doc,
+            "RELATÓRIO DE ESTOQUE ATUAL",
+            `Filial: ${filial}`
+        );
 
         const corpo = cacheEstoqueAtual.map(i => [
             i.material,
@@ -1633,7 +1695,7 @@
         ]);
 
         doc.autoTable({
-            startY: 30,
+            startY: startY,
             head: [["Material", "Últ. Entrada", "Qtd", "Últ. Uso O.S", "Estoque Atual"]],
             body: corpo,
             theme: "grid",
@@ -1649,8 +1711,130 @@
             alternateRowStyles: { fillColor: [245, 252, 251] }
         });
 
-        doc.save(`Estoque_${filial}_${dataRel.replace(/[\/:\s]/g, "-")}.pdf`);
+        doc.save(`Estoque_${filial}.pdf`);
     });
-</script>
-</body>
-</html>
+
+    // =========================================================================
+    // ITEM 2: MENU DE RELATÓRIOS GERENCIAIS (EXCLUSIVO PARA SUPERVISORES)
+    // =========================================================================
+    document.getElementById("btnIrRelatorios").addEventListener("click", () => {
+        if (sessao.perfil !== "supervisor") {
+            return alert("Acesso restrito aos Supervisores.");
+        }
+
+        const selFilial = document.getElementById("relFilial");
+        selFilial.innerHTML = "";
+        sessao.filiaisAutorizadas.forEach(f => {
+            const opt = document.createElement("option");
+            opt.value = f;
+            opt.innerText = f;
+            if (f === sessao.filial) opt.selected = true;
+            selFilial.appendChild(opt);
+        });
+
+        const selTec = document.getElementById("relTecnico");
+        selTec.innerHTML = '<option value="">Todos os Técnicos</option>';
+        sessao.tecnicos.forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.innerText = t;
+            selTec.appendChild(opt);
+        });
+
+        carregarMateriaisFiltroRelatorio(selFilial.value);
+        atualizarFiltrosVisiveisRelatorio();
+        document.getElementById("areaResultadoRelatorio").innerHTML = "";
+        document.getElementById("btnExportarRelatorioPDF").classList.add("hidden");
+        abrirTela("telaRelatorios");
+    });
+
+    document.getElementById("relFilial").addEventListener("change", function() {
+        carregarMateriaisFiltroRelatorio(this.value);
+    });
+
+    function carregarMateriaisFiltroRelatorio(filial) {
+        fetch(`${URL_APPS_SCRIPT}?action=getDadosIniciais&filial=${encodeURIComponent(filial)}`)
+            .then(r => r.json())
+            .then(data => {
+                const selMat = document.getElementById("relMaterial");
+                selMat.innerHTML = '<option value="">Todos os Materiais</option>';
+                (data.materiais || []).forEach(m => {
+                    const opt = document.createElement("option");
+                    opt.value = m;
+                    opt.innerText = m;
+                    selMat.appendChild(opt);
+                });
+            });
+    }
+
+    document.getElementById("relTipo").addEventListener("change", atualizarFiltrosVisiveisRelatorio);
+
+    function atualizarFiltrosVisiveisRelatorio() {
+        const tipo = document.getElementById("relTipo").value;
+        const boxIni = document.getElementById("boxRelDataIni");
+        const boxFim = document.getElementById("boxRelDataFim");
+        const boxTec = document.getElementById("boxRelTecnico");
+        const boxMat = document.getElementById("boxRelMaterial");
+
+        boxIni.classList.remove("hidden");
+        boxFim.classList.remove("hidden");
+        boxTec.classList.add("hidden");
+        boxMat.classList.add("hidden");
+
+        if (tipo === "estoque_filial") {
+            boxIni.classList.add("hidden");
+            boxFim.classList.add("hidden");
+        } else if (tipo === "uso_material_tecnico") {
+            boxTec.classList.remove("hidden");
+        } else if (tipo === "entrada_materiais") {
+            boxMat.classList.remove("hidden");
+        }
+    }
+
+    document.getElementById("btnGerarRelatorio").addEventListener("click", () => {
+        const tipo = document.getElementById("relTipo").value;
+        const filial = document.getElementById("relFilial").value;
+        const dataInicio = document.getElementById("relDataInicio").value;
+        const dataFim = document.getElementById("relDataFim").value;
+        const tecnico = document.getElementById("relTecnico").value;
+        const material = document.getElementById("relMaterial").value;
+
+        const btn = document.getElementById("btnGerarRelatorio");
+        const area = document.getElementById("areaResultadoRelatorio");
+        const btnPDF = document.getElementById("btnExportarRelatorioPDF");
+
+        btn.disabled = true;
+        btn.innerText = "Gerando relatório...";
+        btnPDF.classList.add("hidden");
+        area.innerHTML = "<p style='text-align:center; padding:15px;'>Consultando dados da planilha...</p>";
+
+        if (tipo === "estoque_filial") {
+            fetch(`${URL_APPS_SCRIPT}?action=getEstoque&filial=${encodeURIComponent(filial)}`)
+                .then(r => r.json())
+                .then(res => {
+                    btn.disabled = false;
+                    btn.innerText = "📊 Gerar Relatório";
+                    cacheRelatorioAtual = { tipo, filial, dados: res.estoque || [] };
+                    renderizarRelatorioNaTela(cacheRelatorioAtual);
+                    btnPDF.classList.remove("hidden");
+                });
+            return;
+        }
+
+        const url = `${URL_APPS_SCRIPT}?action=getDadosRelatorio&tipo=${encodeURIComponent(tipo)}&filial=${encodeURIComponent(filial)}&dataInicio=${encodeURIComponent(dataInicio)}&dataFim=${encodeURIComponent(dataFim)}&tecnico=${encodeURIComponent(tecnico)}&material=${encodeURIComponent(material)}`;
+
+        fetch(url)
+            .then(r => r.json())
+            .then(res => {
+                btn.disabled = false;
+                btn.innerText = "📊 Gerar Relatório";
+                if (res.result !== "success") {
+                    area.innerHTML = `<p style="color:red;">Erro: ${res.error}</p>`;
+                    return;
+                }
+                cacheRelatorioAtual = {
+                    tipo,
+                    filial,
+                    dataInicio: dataInicio ? formatarDataISOparaBR(dataInicio) : "Início",
+                    dataFim: dataFim ? formatarDataISOparaBR(dataFim) : "Atual",
+                    tecnico,
